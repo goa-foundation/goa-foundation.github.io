@@ -380,7 +380,7 @@
         }
         
         .subject-label {
-            font-size: 17px;
+            font-size: 13px;
             font-weight: 600;
             fill: var(--gf-text-dark);
             cursor: pointer;
@@ -391,7 +391,6 @@
         .subject-label:hover {
             fill: var(--gf-primary);
             font-weight: bold;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
         
         .controls {
@@ -822,19 +821,19 @@
             setupDimensions() {
                 this.height = this.processedData.length * this.rowHeight;
                 
-                // Responsive margin adjustments - increased left margin for better label visibility
+                // Responsive margin adjustments
                 const isMobile = window.innerWidth <= 768;
                 const isTablet = window.innerWidth <= 1024;
                 
                 if (isMobile) {
-                    this.margin = { top: 30, right: 20, bottom: 60, left: 220 };
-                    this.rowHeight = 55; // Increased to accommodate multi-line labels
+                    this.margin = { top: 30, right: 20, bottom: 60, left: 150 };
+                    this.rowHeight = 35;
                 } else if (isTablet) {
-                    this.margin = { top: 40, right: 30, bottom: 70, left: 280 };
-                    this.rowHeight = 60; // Increased to accommodate multi-line labels
+                    this.margin = { top: 40, right: 30, bottom: 70, left: 200 };
+                    this.rowHeight = 38;
                 } else {
-                    this.margin = { top: 50, right: 50, bottom: 80, left: 350 };
-                    this.rowHeight = 65; // Increased to accommodate multi-line labels
+                    this.margin = { top: 50, right: 50, bottom: 80, left: 250 };
+                    this.rowHeight = 40;
                 }
                 
                 // Recalculate height with new row height
@@ -1061,48 +1060,30 @@
                     .attr('cursor', 'pointer')
                     .style('pointer-events', 'all');
                 
-                // Subject labels with multi-line wrapping - improved readability
+                // Subject labels with responsive text length and click handling
                 const isMobile = window.innerWidth <= 768;
-                const labelFontSize = isMobile ? 12 : (window.innerWidth <= 1024 ? 13 : 17);
-                const labelWidth = isMobile ? 200 : (window.innerWidth <= 1024 ? 260 : 330);
+                const maxSubjectLength = isMobile ? 20 : (window.innerWidth <= 1024 ? 25 : 35);
+                const labelFontSize = isMobile ? '10px' : (window.innerWidth <= 1024 ? '11px' : '12px');
                 
-                const subjectLabels = this.g.selectAll('.subject-label-group')
+                const subjectLabels = this.g.selectAll('.subject-label')
                     .data(this.processedData)
                     .enter()
-                    .append('g')
-                    .attr('class', 'subject-label-group')
-                    .attr('transform', d => `translate(-10, ${this.yScale(d.subject) + this.yScale.bandwidth() / 2})`)
-                    .style('cursor', 'pointer');
-                
-                // Create multi-line text for each subject
-                subjectLabels.each((d, i, nodes) => {
-                    const group = d3.select(nodes[i]);
-                    const lines = this.wrapText(d.subject, labelWidth, labelFontSize);
-                    const lineHeight = labelFontSize * 1.2;
-                    const totalHeight = lines.length * lineHeight;
-                    const startY = -(totalHeight / 2) + (lineHeight / 2);
-                    
-                    lines.forEach((line, lineIndex) => {
-                        group.append('text')
-                            .attr('class', 'subject-label')
-                            .attr('x', 0)
-                            .attr('y', startY + (lineIndex * lineHeight))
-                            .attr('text-anchor', 'end')
-                            .style('font-size', `${labelFontSize}px`)
-                            .style('font-weight', '500')
-                            .style('fill', 'var(--gf-text-dark)')
-                            .style('font-family', 'Source Sans Pro, sans-serif')
-                            .text(line);
-                    });
-                })
+                    .append('text')
+                    .attr('class', 'subject-label')
+                    .attr('x', -10)
+                    .attr('y', d => this.yScale(d.subject) + this.yScale.bandwidth() / 2)
+                    .attr('dy', '0.35em')
+                    .attr('text-anchor', 'end')
+                    .style('font-size', labelFontSize)
+                    .style('font-weight', '500')
+                    .style('cursor', 'pointer')
+                    .style('transition', 'all 0.2s ease')
+                    .text(d => this.truncateText(d.subject, maxSubjectLength))
                     .on('mouseover', (event, d) => {
-                        // Find the parent label group and highlight all text elements
-                        const labelGroup = d3.select(event.target.parentNode);
-                        if (labelGroup.classed('subject-label-group')) {
-                            labelGroup.selectAll('.subject-label')
-                                .style('fill', 'var(--gf-primary)')
-                                .style('font-weight', 'bold');
-                        }
+                        // Highlight the label on hover
+                        d3.select(event.target)
+                            .style('fill', '#1f2937')
+                            .style('font-weight', 'bold');
                         // Also show tooltip
                         this.showTooltip(event, d);
                         // Highlight the corresponding visual bar
@@ -1115,13 +1096,10 @@
                         this.moveTooltip(event);
                     })
                     .on('mouseout', (event, d) => {
-                        // Find the parent label group and reset all text elements
-                        const labelGroup = d3.select(event.target.parentNode);
-                        if (labelGroup.classed('subject-label-group')) {
-                            labelGroup.selectAll('.subject-label')
-                                .style('fill', 'var(--gf-text-dark)')
-                                .style('font-weight', '500');
-                        }
+                        // Reset label styling
+                        d3.select(event.target)
+                            .style('fill', '#374151')
+                            .style('font-weight', '500');
                         // Hide tooltip
                         this.hideTooltip();
                         // Reset the visual bar highlight
@@ -1382,50 +1360,25 @@
                     .attr('width', this.width)
                     .attr('height', this.yScale.bandwidth());
                 
-                // Update labels with multi-line wrapping - improved readability
+                // Update labels with responsive text length
                 const isMobile = window.innerWidth <= 768;
-                const labelFontSize = isMobile ? 12 : (window.innerWidth <= 1024 ? 13 : 17);
-                const labelWidth = isMobile ? 200 : (window.innerWidth <= 1024 ? 260 : 330);
+                const maxSubjectLength = isMobile ? 20 : (window.innerWidth <= 1024 ? 25 : 35);
+                const labelFontSize = isMobile ? '10px' : (window.innerWidth <= 1024 ? '11px' : '12px');
                 
-                // Remove old labels and recreate with new wrapping
-                this.g.selectAll('.subject-label-group').remove();
-                
-                const subjectLabels = this.g.selectAll('.subject-label-group')
+                this.g.selectAll('.subject-label')
                     .data(this.processedData)
-                    .enter()
-                    .append('g')
-                    .attr('class', 'subject-label-group')
-                    .attr('transform', d => `translate(-10, ${this.yScale(d.subject) + this.yScale.bandwidth() / 2})`)
-                    .style('cursor', 'pointer');
+                    .transition()
+                    .duration(500)
+                    .attr('y', d => this.yScale(d.subject) + this.yScale.bandwidth() / 2)
+                    .style('font-size', labelFontSize)
+                    .text(d => this.truncateText(d.subject, maxSubjectLength));
                 
-                // Create multi-line text for each subject
-                subjectLabels.each((d, i, nodes) => {
-                    const group = d3.select(nodes[i]);
-                    const lines = this.wrapText(d.subject, labelWidth, labelFontSize);
-                    const lineHeight = labelFontSize * 1.2;
-                    const totalHeight = lines.length * lineHeight;
-                    const startY = -(totalHeight / 2) + (lineHeight / 2);
-                    
-                    lines.forEach((line, lineIndex) => {
-                        group.append('text')
-                            .attr('class', 'subject-label')
-                            .attr('x', 0)
-                            .attr('y', startY + (lineIndex * lineHeight))
-                            .attr('text-anchor', 'end')
-                            .style('font-size', `${labelFontSize}px`)
-                            .style('font-weight', '500')
-                            .style('fill', 'var(--gf-text-dark)')
-                            .style('font-family', 'Source Sans Pro, sans-serif')
-                            .text(line);
-                    });
-                });
-                
-                // Re-attach event handlers to label groups after update
-                this.g.selectAll('.subject-label-group')
+                // Re-attach event handlers to labels after update
+                this.g.selectAll('.subject-label')
+                    .style('cursor', 'pointer')
                     .on('mouseover', (event, d) => {
-                        // Highlight all text elements in the group
-                        d3.select(event.currentTarget).selectAll('.subject-label')
-                            .style('fill', 'var(--gf-primary)')
+                        d3.select(event.target)
+                            .style('fill', '#1f2937')
                             .style('font-weight', 'bold');
                         this.showTooltip(event, d);
                         this.g.selectAll('.subject-bar')
@@ -1437,9 +1390,8 @@
                         this.moveTooltip(event);
                     })
                     .on('mouseout', (event, d) => {
-                        // Reset all text elements in the group
-                        d3.select(event.currentTarget).selectAll('.subject-label')
-                            .style('fill', 'var(--gf-text-dark)')
+                        d3.select(event.target)
+                            .style('fill', '#374151')
                             .style('font-weight', '500');
                         this.hideTooltip();
                         this.g.selectAll('.subject-bar')
@@ -1595,36 +1547,6 @@
             
             truncateText(text, maxLength) {
                 return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-            }
-            
-            // Utility function to wrap text into multiple lines
-            wrapText(text, width, fontSize) {
-                const words = text.split(/\s+/);
-                const lines = [];
-                let currentLine = [];
-                
-                // Approximate character width based on font size (rough estimate)
-                const charWidth = fontSize * 0.6;
-                const maxCharsPerLine = Math.floor(width / charWidth);
-                
-                for (const word of words) {
-                    const testLine = [...currentLine, word].join(' ');
-                    if (testLine.length <= maxCharsPerLine || currentLine.length === 0) {
-                        currentLine.push(word);
-                    } else {
-                        if (currentLine.length > 0) {
-                            lines.push(currentLine.join(' '));
-                            currentLine = [word];
-                        }
-                    }
-                }
-                
-                if (currentLine.length > 0) {
-                    lines.push(currentLine.join(' '));
-                }
-                
-                // Limit to 3 lines maximum to prevent excessive height
-                return lines.slice(0, 3);
             }
             
             showContent() {
