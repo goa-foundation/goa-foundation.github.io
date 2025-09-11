@@ -333,26 +333,6 @@
             background: #1d4ed8;
         }
         
-        .legend {
-            margin-top: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-        }
-        
-        .legend-color {
-            width: 20px;
-            height: 12px;
-            border-radius: 2px;
-        }
         
         @media (max-width: 768px) {
             .timeline-container {
@@ -360,12 +340,57 @@
             }
             
             .tooltip {
-                max-width: 300px;
-                font-size: 11px;
+                max-width: 250px;
+                font-size: 10px;
+                padding: 10px;
             }
             
             .controls {
                 justify-content: center;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .sort-button {
+                padding: 6px 12px;
+                font-size: 12px;
+                min-width: 120px;
+            }
+            
+            #timeline {
+                overflow-x: auto;
+                padding: 10px !important;
+            }
+            
+            .main-layout {
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .timeline-container {
+                padding: 5px;
+            }
+            
+            .tooltip {
+                max-width: 200px;
+                font-size: 9px;
+                padding: 8px;
+            }
+            
+            .controls {
+                gap: 6px;
+            }
+            
+            .sort-button {
+                padding: 5px 10px;
+                font-size: 11px;
+                min-width: 100px;
+            }
+            
+            #timeline {
+                padding: 5px !important;
             }
         }
     </style>
@@ -421,9 +446,6 @@
                 <div class="timeline-section">
                     <!-- Timeline visualization -->
                     <div id="timeline" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6"></div>
-                    
-                    <!-- Legend -->
-                    <div class="legend" id="legend"></div>
                 </div>
                 
                 <!-- Sidebar -->
@@ -469,14 +491,16 @@
             constructor() {
                 this.data = [];
                 this.processedData = [];
+                // Initial margins - will be adjusted in setupDimensions based on screen size
                 this.margin = { top: 50, right: 50, bottom: 80, left: 250 };
-                this.width = 1100 - this.margin.left - this.margin.right;
+                this.width = 0; // Will be calculated based on container size
                 this.height = 0; // Will be calculated based on data
                 this.rowHeight = 40;
                 this.currentSort = 'year';
                 this.colors = d3.scaleOrdinal(d3.schemeCategory10);
                 this.selectedCategory = null;
                 this.sidebar = document.getElementById('case-sidebar');
+                this.resizeTimeout = null;
                 
                 this.init();
             }
@@ -564,22 +588,69 @@
             setupDimensions() {
                 this.height = this.processedData.length * this.rowHeight;
                 
-                // Responsive width - account for sidebar if visible
+                // Responsive margin adjustments
+                const isMobile = window.innerWidth <= 768;
+                const isTablet = window.innerWidth <= 1024;
+                
+                if (isMobile) {
+                    this.margin = { top: 30, right: 20, bottom: 60, left: 150 };
+                    this.rowHeight = 35;
+                } else if (isTablet) {
+                    this.margin = { top: 40, right: 30, bottom: 70, left: 200 };
+                    this.rowHeight = 38;
+                } else {
+                    this.margin = { top: 50, right: 50, bottom: 80, left: 250 };
+                    this.rowHeight = 40;
+                }
+                
+                // Recalculate height with new row height
+                this.height = this.processedData.length * this.rowHeight;
+                
+                // Responsive width calculation
                 const container = document.getElementById('timeline');
-                const containerWidth = container.clientWidth - 40; // Account for padding
-                const maxWidth = window.innerWidth > 1024 ? 800 : 1100; // Smaller max when sidebar is present
-                this.width = Math.max(500, Math.min(maxWidth, containerWidth - this.margin.left - this.margin.right));
+                const containerWidth = container.clientWidth;
+                const padding = isMobile ? 20 : 40; // Account for container padding
+                
+                // Calculate available width after margins and padding
+                const availableWidth = containerWidth - padding - this.margin.left - this.margin.right;
+                
+                // Set minimum and maximum widths based on screen size
+                let minWidth, maxWidth;
+                if (isMobile) {
+                    minWidth = 200;
+                    maxWidth = 400;
+                } else if (isTablet) {
+                    minWidth = 400;
+                    maxWidth = 600;
+                } else {
+                    minWidth = 500;
+                    maxWidth = 1100;
+                }
+                
+                this.width = Math.max(minWidth, Math.min(maxWidth, availableWidth));
             }
             
             createVisualization() {
                 // Clear any existing visualization
                 d3.select('#timeline').selectAll('*').remove();
                 
-                // Create SVG
-                this.svg = d3.select('#timeline')
+                // Ensure container has proper overflow handling
+                const container = d3.select('#timeline');
+                container.style('overflow-x', 'auto')
+                         .style('overflow-y', 'visible');
+                
+                // Create SVG with responsive sizing
+                const svgWidth = this.width + this.margin.left + this.margin.right;
+                const svgHeight = this.height + this.margin.top + this.margin.bottom;
+                
+                this.svg = container
                     .append('svg')
-                    .attr('width', this.width + this.margin.left + this.margin.right)
-                    .attr('height', this.height + this.margin.top + this.margin.bottom);
+                    .attr('width', svgWidth)
+                    .attr('height', svgHeight)
+                    .attr('viewBox', `0 0 ${svgWidth} ${svgHeight}`)
+                    .attr('preserveAspectRatio', 'xMidYMid meet')
+                    .style('max-width', '100%')
+                    .style('height', 'auto');
                 
                 this.g = this.svg.append('g')
                     .attr('transform', `translate(${this.margin.left},${this.margin.top})`);
@@ -595,9 +666,6 @@
                 
                 // Create tooltip
                 this.createTooltip();
-                
-                // Create legend
-                this.createLegend();
                 
                 // Update statistics
                 this.updateStatistics();
@@ -643,6 +711,7 @@
             }
             
             createBars() {
+                // Create the visual bars
                 const bars = this.g.selectAll('.category-bar')
                     .data(this.processedData)
                     .enter()
@@ -650,14 +719,37 @@
                     .attr('class', 'category-bar')
                     .attr('x', d => this.xScale(d.minYear))
                     .attr('y', d => this.yScale(d.category))
-                    .attr('width', d => this.xScale(d.maxYear) - this.xScale(d.minYear))
+                    .attr('width', d => {
+                        // Calculate width, ensuring minimum 1 year span
+                        const calculatedWidth = this.xScale(d.maxYear) - this.xScale(d.minYear);
+                        const oneYearWidth = this.xScale(d.minYear + 1) - this.xScale(d.minYear);
+                        return Math.max(calculatedWidth, oneYearWidth);
+                    })
                     .attr('height', this.yScale.bandwidth())
                     .attr('fill', (d, i) => this.colors(i))
                     .attr('stroke', '#fff')
                     .attr('stroke-width', 1)
                     .attr('rx', 4);
                 
-                // Category labels
+                // Create invisible overlay rectangles for easier clicking (full row width)
+                const clickOverlays = this.g.selectAll('.category-click-overlay')
+                    .data(this.processedData)
+                    .enter()
+                    .append('rect')
+                    .attr('class', 'category-click-overlay')
+                    .attr('x', 0)
+                    .attr('y', d => this.yScale(d.category))
+                    .attr('width', this.width)
+                    .attr('height', this.yScale.bandwidth())
+                    .attr('fill', 'transparent')
+                    .attr('cursor', 'pointer')
+                    .style('pointer-events', 'all');
+                
+                // Category labels with responsive text length
+                const isMobile = window.innerWidth <= 768;
+                const maxCategoryLength = isMobile ? 20 : (window.innerWidth <= 1024 ? 25 : 35);
+                const labelFontSize = isMobile ? '10px' : (window.innerWidth <= 1024 ? '11px' : '12px');
+                
                 this.g.selectAll('.category-label')
                     .data(this.processedData)
                     .enter()
@@ -667,27 +759,36 @@
                     .attr('y', d => this.yScale(d.category) + this.yScale.bandwidth() / 2)
                     .attr('dy', '0.35em')
                     .attr('text-anchor', 'end')
-                    .style('font-size', '12px')
+                    .style('font-size', labelFontSize)
                     .style('font-weight', '500')
-                    .text(d => this.truncateText(d.category, 35))
+                    .text(d => this.truncateText(d.category, maxCategoryLength))
                     .append('title')
                     .text(d => d.category);
                 
-                // Case count labels on bars
+                // Case count labels on bars with responsive sizing
+                const countFontSize = isMobile ? '9px' : (window.innerWidth <= 1024 ? '10px' : '11px');
+                const countText = isMobile ? (d => `${d.caseCount}`) : (d => `${d.caseCount} cases`);
+                
                 this.g.selectAll('.case-count')
                     .data(this.processedData)
                     .enter()
                     .append('text')
                     .attr('class', 'case-count')
-                    .attr('x', d => this.xScale(d.minYear) + (this.xScale(d.maxYear) - this.xScale(d.minYear)) / 2)
+                    .attr('x', d => {
+                        // Calculate bar width with minimum 1 year span
+                        const calculatedWidth = this.xScale(d.maxYear) - this.xScale(d.minYear);
+                        const oneYearWidth = this.xScale(d.minYear + 1) - this.xScale(d.minYear);
+                        const barWidth = Math.max(calculatedWidth, oneYearWidth);
+                        return this.xScale(d.minYear) + barWidth / 2;
+                    })
                     .attr('y', d => this.yScale(d.category) + this.yScale.bandwidth() / 2)
                     .attr('dy', '0.35em')
                     .attr('text-anchor', 'middle')
-                    .style('font-size', '11px')
+                    .style('font-size', countFontSize)
                     .style('font-weight', 'bold')
                     .style('fill', 'white')
                     .style('text-shadow', '1px 1px 2px rgba(0,0,0,0.7)')
-                    .text(d => `${d.caseCount} cases`);
+                    .text(countText);
             }
             
             createTooltip() {
@@ -696,15 +797,26 @@
                     .attr('class', 'tooltip')
                     .style('opacity', 0);
                 
-                this.g.selectAll('.category-bar')
+                // Attach events to the click overlays for better interaction
+                this.g.selectAll('.category-click-overlay')
                     .on('mouseover', (event, d) => {
                         this.showTooltip(event, d);
+                        // Highlight the corresponding visual bar
+                        this.g.selectAll('.category-bar')
+                            .filter(barData => barData === d)
+                            .style('opacity', 0.8)
+                            .style('stroke-width', 2);
                     })
                     .on('mousemove', (event) => {
                         this.moveTooltip(event);
                     })
-                    .on('mouseout', () => {
+                    .on('mouseout', (event, d) => {
                         this.hideTooltip();
+                        // Reset the visual bar highlight
+                        this.g.selectAll('.category-bar')
+                            .filter(barData => barData === d)
+                            .style('opacity', 1)
+                            .style('stroke-width', 1);
                     })
                     .on('click', (event, d) => {
                         this.selectCategory(d);
@@ -784,7 +896,7 @@
                 // Update selected state
                 this.selectedCategory = data;
                 
-                // Update visual selection
+                // Update visual selection on bars
                 this.g.selectAll('.category-bar')
                     .classed('selected', d => d === data);
                 
@@ -869,23 +981,6 @@
                 return links;
             }
             
-            createLegend() {
-                const legendContainer = d3.select('#legend');
-                legendContainer.selectAll('*').remove();
-                
-                const legendItems = legendContainer.selectAll('.legend-item')
-                    .data(this.processedData.slice(0, 10)) // Show first 10 categories
-                    .enter()
-                    .append('div')
-                    .attr('class', 'legend-item');
-                
-                legendItems.append('div')
-                    .attr('class', 'legend-color')
-                    .style('background-color', (d, i) => this.colors(i));
-                
-                legendItems.append('span')
-                    .text(d => this.truncateText(d.category, 30));
-            }
             
             updateVisualization() {
                 this.setupScales();
@@ -897,25 +992,53 @@
                     .duration(500)
                     .attr('x', d => this.xScale(d.minYear))
                     .attr('y', d => this.yScale(d.category))
-                    .attr('width', d => this.xScale(d.maxYear) - this.xScale(d.minYear));
+                    .attr('width', d => {
+                        // Calculate width, ensuring minimum 1 year span
+                        const calculatedWidth = this.xScale(d.maxYear) - this.xScale(d.minYear);
+                        const oneYearWidth = this.xScale(d.minYear + 1) - this.xScale(d.minYear);
+                        return Math.max(calculatedWidth, oneYearWidth);
+                    });
                 
-                // Update labels
+                // Update click overlays
+                this.g.selectAll('.category-click-overlay')
+                    .data(this.processedData)
+                    .transition()
+                    .duration(500)
+                    .attr('y', d => this.yScale(d.category))
+                    .attr('width', this.width)
+                    .attr('height', this.yScale.bandwidth());
+                
+                // Update labels with responsive text length
+                const isMobile = window.innerWidth <= 768;
+                const maxCategoryLength = isMobile ? 20 : (window.innerWidth <= 1024 ? 25 : 35);
+                const labelFontSize = isMobile ? '10px' : (window.innerWidth <= 1024 ? '11px' : '12px');
+                
                 this.g.selectAll('.category-label')
                     .data(this.processedData)
                     .transition()
                     .duration(500)
                     .attr('y', d => this.yScale(d.category) + this.yScale.bandwidth() / 2)
-                    .text(d => this.truncateText(d.category, 35));
+                    .style('font-size', labelFontSize)
+                    .text(d => this.truncateText(d.category, maxCategoryLength));
                 
-                // Update case counts
+                // Update case counts with responsive sizing
+                const countFontSize = isMobile ? '9px' : (window.innerWidth <= 1024 ? '10px' : '11px');
+                const countText = isMobile ? (d => `${d.caseCount}`) : (d => `${d.caseCount} cases`);
+                
                 this.g.selectAll('.case-count')
                     .data(this.processedData)
                     .transition()
                     .duration(500)
-                    .attr('x', d => this.xScale(d.minYear) + (this.xScale(d.maxYear) - this.xScale(d.minYear)) / 2)
-                    .attr('y', d => this.yScale(d.category) + this.yScale.bandwidth() / 2);
-                
-                this.createLegend();
+                    .attr('x', d => {
+                        // Calculate bar width with minimum 1 year span
+                        const calculatedWidth = this.xScale(d.maxYear) - this.xScale(d.minYear);
+                        const oneYearWidth = this.xScale(d.minYear + 1) - this.xScale(d.minYear);
+                        const barWidth = Math.max(calculatedWidth, oneYearWidth);
+                        return this.xScale(d.minYear) + barWidth / 2;
+                    })
+                    .attr('y', d => this.yScale(d.category) + this.yScale.bandwidth() / 2)
+                    .style('font-size', countFontSize)
+                    .text(countText);
             }
             
             updateStatistics() {
@@ -952,7 +1075,9 @@
                 
                 // Handle clicking outside to close sidebar
                 document.addEventListener('click', (event) => {
-                    if (!this.sidebar.contains(event.target) && !event.target.closest('.category-bar')) {
+                    if (!this.sidebar.contains(event.target) && 
+                        !event.target.closest('.category-bar') && 
+                        !event.target.closest('.category-click-overlay')) {
                         this.clearSelection();
                     }
                 });
@@ -974,14 +1099,23 @@
                 // Debounce resize handling
                 clearTimeout(this.resizeTimeout);
                 this.resizeTimeout = setTimeout(() => {
+                    // Force recalculation of dimensions
                     this.setupDimensions();
+                    // Completely recreate the visualization for proper responsive behavior
                     this.createVisualization();
+                    // If sidebar is open, make sure it stays properly positioned
+                    if (this.selectedCategory) {
+                        this.showSidebar(this.selectedCategory, true);
+                    }
                 }, 300);
             }
             
             clearSelection() {
                 this.selectedCategory = null;
-                this.g.selectAll('.category-bar').classed('selected', false);
+                this.g.selectAll('.category-bar')
+                    .classed('selected', false)
+                    .style('opacity', 1)
+                    .style('stroke-width', 1);
                 this.sidebar.classList.add('collapsed');
             }
             
