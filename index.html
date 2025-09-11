@@ -280,17 +280,17 @@
             }
         }
         
-        .category-bar {
+        .subject-bar {
             cursor: pointer;
             transition: all 0.3s ease;
         }
         
-        .category-bar:hover {
+        .subject-bar:hover {
             opacity: 0.8;
             stroke-width: 2;
         }
         
-        .category-bar.selected {
+        .subject-bar.selected {
             stroke: #1f2937;
             stroke-width: 3;
             filter: brightness(1.1);
@@ -379,8 +379,8 @@
             shape-rendering: crispEdges;
         }
         
-        .category-label {
-            font-size: 13px;
+        .subject-label {
+            font-size: 17px;
             font-weight: 600;
             fill: var(--gf-text-dark);
             cursor: pointer;
@@ -388,9 +388,10 @@
             font-family: 'Source Sans Pro', sans-serif;
         }
         
-        .category-label:hover {
+        .subject-label:hover {
             fill: var(--gf-primary);
             font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
         
         .controls {
@@ -566,23 +567,22 @@
 
 <body style="background-color: var(--gf-background); color: var(--gf-text-dark);" class="min-h-screen">
     <!-- Header -->
-    <header style="background-color: var(--gf-primary); color: var(--gf-white);" class="p-6 shadow-lg">
+    <header style="color: var(--gf-primary);border-bottom: 4px solid var(--gf-primary); " class="p-1 shadow-lg">
         <div class="timeline-container">
             <div class="flex justify-between items-center">
-                <div class="flex items-center gap-4">
-                    <img src="goa-foundation-logo.png" alt="Goa Foundation Logo" class="h-16 w-16 object-contain">
+                <div class="flex items-center gap-2">
+                    <a href="https://goafoundation.org/" target="_blank"><img src="goa-foundation-logo.png" alt="Goa Foundation Logo" class="h-24 w-24 object-contain"></a>
                     <div>
-                        <h1 class="text-3xl font-bold text-white">Goa Foundation</h1>
-                        <h2 class="text-xl font-semibold" style="color: var(--gf-background);">Legal Cases Timeline</h2>
-                        <p class="text-sm mt-1 opacity-90">Interactive visualization of legal cases by category and year</p>
+                        <h1 class="text-2xl">Library of Petitions</h1>
+                        <h2 class="text-l">for the conservation and protection of Goa’s natural environment</h2>
                     </div>
                 </div>
-                <div class="flex gap-3">
+                <div class="flex gap-2">
                     <a href="https://docs.google.com/spreadsheets/d/14-tOqKm1Wh5sTU32ycJ7GPn65tGsDZDDCviMg3fhe4c/edit?gid=1740040742#gid=1740040742" 
                        target="_blank" 
                        style="background-color: var(--gf-primary-dark); border-color: var(--gf-primary-dark);"
-                       class="px-4 py-2 hover:opacity-90 rounded-lg text-sm transition-all duration-200 border-2 text-white font-medium">
-                        📝 Edit Data
+                       class="ml-2 px-1 py-1 hover:opacity-90 rounded-lg text-sm transition-all duration-200 border-2 text-white font-medium">
+                        Edit
                     </a>
                 </div>
             </div>
@@ -590,22 +590,13 @@
     </header>
 
     <!-- Statistics -->
-    <div id="stats" class="timeline-container mt-6 rounded-lg shadow-lg border-2 p-8 hidden" 
+    <div id="stats" class="timeline-container mt-4 rounded-lg shadow-sm border p-4 hidden" 
          style="background-color: var(--gf-white); border-color: var(--gf-border);">
-        <h3 class="text-xl font-bold mb-6" style="color: var(--gf-primary);">Timeline Statistics</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="text-center">
-                <div class="text-3xl font-bold mb-2" style="color: var(--gf-primary);" id="total-cases">-</div>
-                <div class="text-sm font-medium" style="color: var(--gf-text-light);">Total Cases</div>
-            </div>
-            <div class="text-center">
-                <div class="text-3xl font-bold mb-2" style="color: var(--gf-primary-dark);" id="total-categories">-</div>
-                <div class="text-sm font-medium" style="color: var(--gf-text-light);">Categories</div>
-            </div>
-            <div class="text-center">
-                <div class="text-3xl font-bold mb-2" style="color: var(--gf-text-dark);" id="year-span">-</div>
-                <div class="text-sm font-medium" style="color: var(--gf-text-light);">Year Span</div>
-            </div>
+        <blockquote class="text-center italic mb-3 text-base" style="color: var(--gf-text-dark);">
+            "The intergenerational equity principle asks us to ensure our children and future generations inherit at least as much as we did."
+        </blockquote>
+        <div class="text-center text-sm" style="color: var(--gf-text-light);">
+            Library coverage: <span id="total-cases">-</span> Cases covering <span id="total-subjects">-</span> Subjects spanning <span id="year-span">-</span>.
         </div>
     </div>
 
@@ -706,7 +697,7 @@
                     '#7D5B56', // Variation 5
                 ];
                 this.colors = d3.scaleOrdinal(gfColors);
-                this.selectedCategory = null;
+                this.selectedSubject = null;
                 this.sidebar = document.getElementById('case-sidebar');
                 this.resizeTimeout = null;
                 this.activeTags = new Set();
@@ -778,10 +769,10 @@
             }
             
             processData() {
-                // Group filtered data by category
-                const groupedData = d3.group(this.filteredData, d => d.Category);
+                // Group filtered data by subject
+                const groupedData = d3.group(this.filteredData, d => d.Subject);
                 
-                this.processedData = Array.from(groupedData, ([category, cases]) => {
+                this.processedData = Array.from(groupedData, ([subject, cases]) => {
                     const years = cases.map(d => +d.Year).filter(year => !isNaN(year));
                     const minYear = d3.min(years);
                     const maxYear = d3.max(years);
@@ -796,7 +787,7 @@
                         });
                     
                     return {
-                        category,
+                        subject,
                         cases: sortedCases,
                         minYear,
                         maxYear,
@@ -819,7 +810,7 @@
                         this.processedData.sort((a, b) => b.caseCount - a.caseCount);
                         break;
                     case 'alpha':
-                        this.processedData.sort((a, b) => a.category.localeCompare(b.category));
+                        this.processedData.sort((a, b) => a.subject.localeCompare(b.subject));
                         break;
                 }
                 
@@ -831,19 +822,19 @@
             setupDimensions() {
                 this.height = this.processedData.length * this.rowHeight;
                 
-                // Responsive margin adjustments
+                // Responsive margin adjustments - increased left margin for better label visibility
                 const isMobile = window.innerWidth <= 768;
                 const isTablet = window.innerWidth <= 1024;
                 
                 if (isMobile) {
-                    this.margin = { top: 30, right: 20, bottom: 60, left: 150 };
-                    this.rowHeight = 35;
+                    this.margin = { top: 30, right: 20, bottom: 60, left: 220 };
+                    this.rowHeight = 55; // Increased to accommodate multi-line labels
                 } else if (isTablet) {
-                    this.margin = { top: 40, right: 30, bottom: 70, left: 200 };
-                    this.rowHeight = 38;
+                    this.margin = { top: 40, right: 30, bottom: 70, left: 280 };
+                    this.rowHeight = 60; // Increased to accommodate multi-line labels
                 } else {
-                    this.margin = { top: 50, right: 50, bottom: 80, left: 250 };
-                    this.rowHeight = 40;
+                    this.margin = { top: 50, right: 50, bottom: 80, left: 350 };
+                    this.rowHeight = 65; // Increased to accommodate multi-line labels
                 }
                 
                 // Recalculate height with new row height
@@ -984,7 +975,7 @@
                 this.createVisualization();
                 
                 // Reset selection since data has changed
-                this.selectedCategory = null;
+                this.selectedSubject = null;
                 this.sidebar.classList.add('collapsed');
             }
             
@@ -997,7 +988,7 @@
                     .range([0, this.width]);
                 
                 this.yScale = d3.scaleBand()
-                    .domain(this.processedData.map(d => d.category))
+                    .domain(this.processedData.map(d => d.subject))
                     .range([0, this.height])
                     .padding(0.1);
             }
@@ -1037,13 +1028,13 @@
             
             createBars() {
                 // Create the visual bars
-                const bars = this.g.selectAll('.category-bar')
+                const bars = this.g.selectAll('.subject-bar')
                     .data(this.processedData)
                     .enter()
                     .append('rect')
-                    .attr('class', 'category-bar')
+                    .attr('class', 'subject-bar')
                     .attr('x', d => this.xScale(d.minYear))
-                    .attr('y', d => this.yScale(d.category))
+                    .attr('y', d => this.yScale(d.subject))
                     .attr('width', d => {
                         // Calculate width, ensuring minimum 1 year span
                         const calculatedWidth = this.xScale(d.maxYear) - this.xScale(d.minYear);
@@ -1057,47 +1048,65 @@
                     .attr('rx', 4);
                 
                 // Create invisible overlay rectangles for easier clicking (full row width)
-                const clickOverlays = this.g.selectAll('.category-click-overlay')
+                const clickOverlays = this.g.selectAll('.subject-click-overlay')
                     .data(this.processedData)
                     .enter()
                     .append('rect')
-                    .attr('class', 'category-click-overlay')
+                    .attr('class', 'subject-click-overlay')
                     .attr('x', 0)
-                    .attr('y', d => this.yScale(d.category))
+                    .attr('y', d => this.yScale(d.subject))
                     .attr('width', this.width)
                     .attr('height', this.yScale.bandwidth())
                     .attr('fill', 'transparent')
                     .attr('cursor', 'pointer')
                     .style('pointer-events', 'all');
                 
-                // Category labels with responsive text length and click handling
+                // Subject labels with multi-line wrapping - improved readability
                 const isMobile = window.innerWidth <= 768;
-                const maxCategoryLength = isMobile ? 20 : (window.innerWidth <= 1024 ? 25 : 35);
-                const labelFontSize = isMobile ? '10px' : (window.innerWidth <= 1024 ? '11px' : '12px');
+                const labelFontSize = isMobile ? 12 : (window.innerWidth <= 1024 ? 13 : 17);
+                const labelWidth = isMobile ? 200 : (window.innerWidth <= 1024 ? 260 : 330);
                 
-                const categoryLabels = this.g.selectAll('.category-label')
+                const subjectLabels = this.g.selectAll('.subject-label-group')
                     .data(this.processedData)
                     .enter()
-                    .append('text')
-                    .attr('class', 'category-label')
-                    .attr('x', -10)
-                    .attr('y', d => this.yScale(d.category) + this.yScale.bandwidth() / 2)
-                    .attr('dy', '0.35em')
-                    .attr('text-anchor', 'end')
-                    .style('font-size', labelFontSize)
-                    .style('font-weight', '500')
-                    .style('cursor', 'pointer')
-                    .style('transition', 'all 0.2s ease')
-                    .text(d => this.truncateText(d.category, maxCategoryLength))
+                    .append('g')
+                    .attr('class', 'subject-label-group')
+                    .attr('transform', d => `translate(-10, ${this.yScale(d.subject) + this.yScale.bandwidth() / 2})`)
+                    .style('cursor', 'pointer');
+                
+                // Create multi-line text for each subject
+                subjectLabels.each((d, i, nodes) => {
+                    const group = d3.select(nodes[i]);
+                    const lines = this.wrapText(d.subject, labelWidth, labelFontSize);
+                    const lineHeight = labelFontSize * 1.2;
+                    const totalHeight = lines.length * lineHeight;
+                    const startY = -(totalHeight / 2) + (lineHeight / 2);
+                    
+                    lines.forEach((line, lineIndex) => {
+                        group.append('text')
+                            .attr('class', 'subject-label')
+                            .attr('x', 0)
+                            .attr('y', startY + (lineIndex * lineHeight))
+                            .attr('text-anchor', 'end')
+                            .style('font-size', `${labelFontSize}px`)
+                            .style('font-weight', '500')
+                            .style('fill', 'var(--gf-text-dark)')
+                            .style('font-family', 'Source Sans Pro, sans-serif')
+                            .text(line);
+                    });
+                })
                     .on('mouseover', (event, d) => {
-                        // Highlight the label on hover
-                        d3.select(event.target)
-                            .style('fill', '#1f2937')
-                            .style('font-weight', 'bold');
+                        // Find the parent label group and highlight all text elements
+                        const labelGroup = d3.select(event.target.parentNode);
+                        if (labelGroup.classed('subject-label-group')) {
+                            labelGroup.selectAll('.subject-label')
+                                .style('fill', 'var(--gf-primary)')
+                                .style('font-weight', 'bold');
+                        }
                         // Also show tooltip
                         this.showTooltip(event, d);
                         // Highlight the corresponding visual bar
-                        this.g.selectAll('.category-bar')
+                        this.g.selectAll('.subject-bar')
                             .filter(barData => barData === d)
                             .style('opacity', 0.8)
                             .style('stroke-width', 2);
@@ -1106,25 +1115,28 @@
                         this.moveTooltip(event);
                     })
                     .on('mouseout', (event, d) => {
-                        // Reset label styling
-                        d3.select(event.target)
-                            .style('fill', '#374151')
-                            .style('font-weight', '500');
+                        // Find the parent label group and reset all text elements
+                        const labelGroup = d3.select(event.target.parentNode);
+                        if (labelGroup.classed('subject-label-group')) {
+                            labelGroup.selectAll('.subject-label')
+                                .style('fill', 'var(--gf-text-dark)')
+                                .style('font-weight', '500');
+                        }
                         // Hide tooltip
                         this.hideTooltip();
                         // Reset the visual bar highlight
-                        this.g.selectAll('.category-bar')
+                        this.g.selectAll('.subject-bar')
                             .filter(barData => barData === d)
                             .style('opacity', 1)
                             .style('stroke-width', 1);
                     })
                     .on('click', (event, d) => {
-                        this.selectCategory(d);
+                        this.selectSubject(d);
                     });
                 
                 // Add tooltips to labels
-                categoryLabels.append('title')
-                    .text(d => d.category);
+                subjectLabels.append('title')
+                    .text(d => d.subject);
                 
                 // Case count labels on bars with responsive sizing
                 const countFontSize = isMobile ? '9px' : (window.innerWidth <= 1024 ? '10px' : '11px');
@@ -1142,7 +1154,7 @@
                         const barWidth = Math.max(calculatedWidth, oneYearWidth);
                         return this.xScale(d.minYear) + barWidth / 2;
                     })
-                    .attr('y', d => this.yScale(d.category) + this.yScale.bandwidth() / 2)
+                    .attr('y', d => this.yScale(d.subject) + this.yScale.bandwidth() / 2)
                     .attr('dy', '0.35em')
                     .attr('text-anchor', 'middle')
                     .style('font-size', countFontSize)
@@ -1160,11 +1172,11 @@
                     .style('opacity', 0);
                 
                 // Attach events to the click overlays for better interaction
-                this.g.selectAll('.category-click-overlay')
+                this.g.selectAll('.subject-click-overlay')
                     .on('mouseover', (event, d) => {
                         this.showTooltip(event, d);
                         // Highlight the corresponding visual bar
-                        this.g.selectAll('.category-bar')
+                        this.g.selectAll('.subject-bar')
                             .filter(barData => barData === d)
                             .style('opacity', 0.8)
                             .style('stroke-width', 2);
@@ -1175,13 +1187,13 @@
                     .on('mouseout', (event, d) => {
                         this.hideTooltip();
                         // Reset the visual bar highlight
-                        this.g.selectAll('.category-bar')
+                        this.g.selectAll('.subject-bar')
                             .filter(barData => barData === d)
                             .style('opacity', 1)
                             .style('stroke-width', 1);
                     })
                     .on('click', (event, d) => {
-                        this.selectCategory(d);
+                        this.selectSubject(d);
                     });
             }
             
@@ -1226,7 +1238,7 @@
                 // Calculate statistics
                 const stats = this.calculateCaseStatistics(data);
                 
-                let content = `<h3>${data.category}</h3>`;
+                let content = `<h3>${data.subject}</h3>`;
                 content += `<div style="margin-bottom: 8px;"><strong>Period:</strong> ${data.minYear}-${data.maxYear} (${data.yearSpan} years)</div>`;
                 content += `<div style="margin-bottom: 8px;"><strong>Case Count:</strong> ${data.caseCount}</div>`;
                 content += `<div style="margin-bottom: 8px;"><strong>Archived:</strong> ${stats.archived.count} (${stats.archived.percentage}%)</div>`;
@@ -1254,12 +1266,12 @@
                 return content;
             }
             
-            selectCategory(data) {
+            selectSubject(data) {
                 // Update selected state
-                this.selectedCategory = data;
+                this.selectedSubject = data;
                 
                 // Update visual selection on bars
-                this.g.selectAll('.category-bar')
+                this.g.selectAll('.subject-bar')
                     .classed('selected', d => d === data);
                 
                 // Show sidebar with full details
@@ -1271,7 +1283,7 @@
                 this.sidebar.classList.remove('collapsed');
                 
                 // Update sidebar header
-                document.getElementById('sidebar-title').textContent = data.category;
+                document.getElementById('sidebar-title').textContent = data.subject;
                 document.getElementById('sidebar-subtitle').textContent = 
                     `${data.minYear}-${data.maxYear} • ${data.caseCount} cases`;
                 
@@ -1280,7 +1292,7 @@
             }
             
             hideSidebar() {
-                if (!this.selectedCategory) {
+                if (!this.selectedSubject) {
                     this.sidebar.classList.add('collapsed');
                 }
             }
@@ -1292,7 +1304,7 @@
                     content.innerHTML = `
                         <div class="sidebar-empty">
                             <div class="icon">📂</div>
-                            <p>No cases found for this category</p>
+                            <p>No cases found for this subject</p>
                         </div>
                     `;
                     return;
@@ -1348,12 +1360,12 @@
                 this.setupScales();
                 
                 // Update bars
-                this.g.selectAll('.category-bar')
+                this.g.selectAll('.subject-bar')
                     .data(this.processedData)
                     .transition()
                     .duration(500)
                     .attr('x', d => this.xScale(d.minYear))
-                    .attr('y', d => this.yScale(d.category))
+                    .attr('y', d => this.yScale(d.subject))
                     .attr('width', d => {
                         // Calculate width, ensuring minimum 1 year span
                         const calculatedWidth = this.xScale(d.maxYear) - this.xScale(d.minYear);
@@ -1362,36 +1374,61 @@
                     });
                 
                 // Update click overlays
-                this.g.selectAll('.category-click-overlay')
+                this.g.selectAll('.subject-click-overlay')
                     .data(this.processedData)
                     .transition()
                     .duration(500)
-                    .attr('y', d => this.yScale(d.category))
+                    .attr('y', d => this.yScale(d.subject))
                     .attr('width', this.width)
                     .attr('height', this.yScale.bandwidth());
                 
-                // Update labels with responsive text length
+                // Update labels with multi-line wrapping - improved readability
                 const isMobile = window.innerWidth <= 768;
-                const maxCategoryLength = isMobile ? 20 : (window.innerWidth <= 1024 ? 25 : 35);
-                const labelFontSize = isMobile ? '10px' : (window.innerWidth <= 1024 ? '11px' : '12px');
+                const labelFontSize = isMobile ? 12 : (window.innerWidth <= 1024 ? 13 : 17);
+                const labelWidth = isMobile ? 200 : (window.innerWidth <= 1024 ? 260 : 330);
                 
-                this.g.selectAll('.category-label')
+                // Remove old labels and recreate with new wrapping
+                this.g.selectAll('.subject-label-group').remove();
+                
+                const subjectLabels = this.g.selectAll('.subject-label-group')
                     .data(this.processedData)
-                    .transition()
-                    .duration(500)
-                    .attr('y', d => this.yScale(d.category) + this.yScale.bandwidth() / 2)
-                    .style('font-size', labelFontSize)
-                    .text(d => this.truncateText(d.category, maxCategoryLength));
+                    .enter()
+                    .append('g')
+                    .attr('class', 'subject-label-group')
+                    .attr('transform', d => `translate(-10, ${this.yScale(d.subject) + this.yScale.bandwidth() / 2})`)
+                    .style('cursor', 'pointer');
                 
-                // Re-attach event handlers to labels after update
-                this.g.selectAll('.category-label')
-                    .style('cursor', 'pointer')
+                // Create multi-line text for each subject
+                subjectLabels.each((d, i, nodes) => {
+                    const group = d3.select(nodes[i]);
+                    const lines = this.wrapText(d.subject, labelWidth, labelFontSize);
+                    const lineHeight = labelFontSize * 1.2;
+                    const totalHeight = lines.length * lineHeight;
+                    const startY = -(totalHeight / 2) + (lineHeight / 2);
+                    
+                    lines.forEach((line, lineIndex) => {
+                        group.append('text')
+                            .attr('class', 'subject-label')
+                            .attr('x', 0)
+                            .attr('y', startY + (lineIndex * lineHeight))
+                            .attr('text-anchor', 'end')
+                            .style('font-size', `${labelFontSize}px`)
+                            .style('font-weight', '500')
+                            .style('fill', 'var(--gf-text-dark)')
+                            .style('font-family', 'Source Sans Pro, sans-serif')
+                            .text(line);
+                    });
+                });
+                
+                // Re-attach event handlers to label groups after update
+                this.g.selectAll('.subject-label-group')
                     .on('mouseover', (event, d) => {
-                        d3.select(event.target)
-                            .style('fill', '#1f2937')
+                        // Highlight all text elements in the group
+                        d3.select(event.currentTarget).selectAll('.subject-label')
+                            .style('fill', 'var(--gf-primary)')
                             .style('font-weight', 'bold');
                         this.showTooltip(event, d);
-                        this.g.selectAll('.category-bar')
+                        this.g.selectAll('.subject-bar')
                             .filter(barData => barData === d)
                             .style('opacity', 0.8)
                             .style('stroke-width', 2);
@@ -1400,17 +1437,18 @@
                         this.moveTooltip(event);
                     })
                     .on('mouseout', (event, d) => {
-                        d3.select(event.target)
-                            .style('fill', '#374151')
+                        // Reset all text elements in the group
+                        d3.select(event.currentTarget).selectAll('.subject-label')
+                            .style('fill', 'var(--gf-text-dark)')
                             .style('font-weight', '500');
                         this.hideTooltip();
-                        this.g.selectAll('.category-bar')
+                        this.g.selectAll('.subject-bar')
                             .filter(barData => barData === d)
                             .style('opacity', 1)
                             .style('stroke-width', 1);
                     })
                     .on('click', (event, d) => {
-                        this.selectCategory(d);
+                        this.selectSubject(d);
                     });
                 
                 // Update case counts with responsive sizing
@@ -1428,7 +1466,7 @@
                         const barWidth = Math.max(calculatedWidth, oneYearWidth);
                         return this.xScale(d.minYear) + barWidth / 2;
                     })
-                    .attr('y', d => this.yScale(d.category) + this.yScale.bandwidth() / 2)
+                    .attr('y', d => this.yScale(d.subject) + this.yScale.bandwidth() / 2)
                     .style('font-size', countFontSize)
                     .style('pointer-events', 'none')
                     .text(countText);
@@ -1436,12 +1474,12 @@
             
             updateStatistics() {
                 const totalCases = this.filteredData.length;
-                const totalCategories = this.processedData.length;
+                const totalSubjects = this.processedData.length;
                 const years = this.processedData.flatMap(d => [d.minYear, d.maxYear]);
                 const yearSpan = d3.max(years) - d3.min(years) + 1;
                 
                 document.getElementById('total-cases').textContent = totalCases;
-                document.getElementById('total-categories').textContent = totalCategories;
+                document.getElementById('total-subjects').textContent = totalSubjects;
                 document.getElementById('year-span').textContent = yearSpan + ' years';
             }
             
@@ -1469,9 +1507,9 @@
                 // Handle clicking outside to close sidebar
                 document.addEventListener('click', (event) => {
                     if (!this.sidebar.contains(event.target) && 
-                        !event.target.closest('.category-bar') && 
-                        !event.target.closest('.category-click-overlay') &&
-                        !event.target.closest('.category-label')) {
+                        !event.target.closest('.subject-bar') && 
+                        !event.target.closest('.subject-click-overlay') &&
+                        !event.target.closest('.subject-label')) {
                         this.clearSelection();
                     }
                 });
@@ -1498,15 +1536,15 @@
                     // Completely recreate the visualization for proper responsive behavior
                     this.createVisualization();
                     // If sidebar is open, make sure it stays properly positioned
-                    if (this.selectedCategory) {
-                        this.showSidebar(this.selectedCategory, true);
+                    if (this.selectedSubject) {
+                        this.showSidebar(this.selectedSubject, true);
                     }
                 }, 300);
             }
             
             clearSelection() {
-                this.selectedCategory = null;
-                this.g.selectAll('.category-bar')
+                this.selectedSubject = null;
+                this.g.selectAll('.subject-bar')
                     .classed('selected', false)
                     .style('opacity', 1)
                     .style('stroke-width', 1);
@@ -1559,6 +1597,36 @@
                 return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
             }
             
+            // Utility function to wrap text into multiple lines
+            wrapText(text, width, fontSize) {
+                const words = text.split(/\s+/);
+                const lines = [];
+                let currentLine = [];
+                
+                // Approximate character width based on font size (rough estimate)
+                const charWidth = fontSize * 0.6;
+                const maxCharsPerLine = Math.floor(width / charWidth);
+                
+                for (const word of words) {
+                    const testLine = [...currentLine, word].join(' ');
+                    if (testLine.length <= maxCharsPerLine || currentLine.length === 0) {
+                        currentLine.push(word);
+                    } else {
+                        if (currentLine.length > 0) {
+                            lines.push(currentLine.join(' '));
+                            currentLine = [word];
+                        }
+                    }
+                }
+                
+                if (currentLine.length > 0) {
+                    lines.push(currentLine.join(' '));
+                }
+                
+                // Limit to 3 lines maximum to prevent excessive height
+                return lines.slice(0, 3);
+            }
+            
             showContent() {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('stats').classList.remove('hidden');
@@ -1571,15 +1639,15 @@
                 document.getElementById('error-message').textContent = message;
             }
             
-            selectCategory(data) {
+            selectSubject(data) {
                 // Update selected state
-                this.selectedCategory = data;
+                this.selectedSubject = data;
                 
                 // Update visual selection on bars
-                this.g.selectAll('.category-bar')
+                this.g.selectAll('.subject-bar')
                     .classed('selected', d => d === data);
                 
-                // Show sidebar with full details (hide sort controls for single category)
+                // Show sidebar with full details (hide sort controls for single subject)
                 this.showSidebar(data, true);
             }
             
@@ -1588,11 +1656,11 @@
                 this.sidebar.classList.remove('collapsed');
                 
                 // Update sidebar header
-                document.getElementById('sidebar-title').textContent = data.category;
+                document.getElementById('sidebar-title').textContent = data.subject;
                 document.getElementById('sidebar-subtitle').textContent = 
                     `${data.minYear}-${data.maxYear} • ${data.caseCount} cases`;
                 
-                // Show sort controls even for single category
+                // Show sort controls even for single subject
                 const sortControls = document.getElementById('sidebar-sort-controls');
                 if (sortControls) {
                     sortControls.style.display = 'flex';
@@ -1603,7 +1671,7 @@
             }
             
             hideSidebar() {
-                if (!this.selectedCategory) {
+                if (!this.selectedSubject) {
                     this.sidebar.classList.add('collapsed');
                 }
             }
@@ -1615,7 +1683,7 @@
                     content.innerHTML = `
                         <div class="sidebar-empty">
                             <div class="icon">📂</div>
-                            <p>No cases found for this category</p>
+                            <p>No cases found for this subject</p>
                         </div>
                     `;
                     return;
@@ -1667,8 +1735,8 @@
             }
             
             clearSelection() {
-                this.selectedCategory = null;
-                this.g.selectAll('.category-bar')
+                this.selectedSubject = null;
+                this.g.selectAll('.subject-bar')
                     .classed('selected', false)
                     .style('opacity', 1)
                     .style('stroke-width', 1);
@@ -1684,7 +1752,7 @@
                 this.createVisualization();
                 
                 // Reset selection since data has changed
-                this.selectedCategory = null;
+                this.selectedSubject = null;
                 
                 // Show all cases again after filter change
                 this.showAllCasesOnLoad();
@@ -1706,13 +1774,13 @@
             }
             
             showAllCasesOnLoad() {
-                // Collect all cases from all categories
+                // Collect all cases from all subjects
                 const allCases = [];
-                this.processedData.forEach(categoryData => {
-                    categoryData.cases.forEach(caseItem => {
+                this.processedData.forEach(subjectData => {
+                    subjectData.cases.forEach(caseItem => {
                         allCases.push({
                             ...caseItem,
-                            category: categoryData.category
+                            subject: subjectData.subject
                         });
                     });
                 });
@@ -1773,13 +1841,13 @@
                 
                 let html = '';
                 allCases.forEach(caseItem => {
-                    html += this.createCaseListItemWithCategory(caseItem);
+                    html += this.createCaseListItemWithSubject(caseItem);
                 });
                 
                 content.innerHTML = html;
             }
             
-            createCaseListItemWithCategory(caseItem) {
+            createCaseListItemWithSubject(caseItem) {
                 const links = this.getCaseLinks(caseItem);
                 
                 return `
@@ -1789,7 +1857,7 @@
                             <div class="case-reference">${caseItem.Reference || 'No Reference'}</div>
                         </div>
                         <div style="font-size: 12px; color: #6b7280; margin-bottom: 6px; font-weight: 500;">
-                            📂 ${caseItem.category}
+                            📂 ${caseItem.subject}
                         </div>
                         ${caseItem.Description ? `<div class="case-description">${caseItem.Description}</div>` : ''}
                         ${links.length > 0 ? `<div class="case-links">${links.join('')}</div>` : ''}
@@ -1846,9 +1914,9 @@
                 }
                 
                 // Re-sort and update the sidebar content
-                if (this.selectedCategory) {
-                    // If viewing a single category, sort that category's cases
-                    this.updateSidebarContentSorted(this.selectedCategory);
+                if (this.selectedSubject) {
+                    // If viewing a single subject, sort that subject's cases
+                    this.updateSidebarContentSorted(this.selectedSubject);
                 } else {
                     // If viewing all cases, use the existing method
                     this.showAllCasesOnLoad();
@@ -1856,7 +1924,7 @@
             }
             
             updateSidebarContentSorted(data) {
-                // Sort the category's cases based on current sort order
+                // Sort the subject's cases based on current sort order
                 const sortedCases = [...data.cases];
                 if (this.sidebarSortOrder === 'oldest') {
                     sortedCases.sort((a, b) => {
@@ -1879,7 +1947,7 @@
                     content.innerHTML = `
                         <div class="sidebar-empty">
                             <div class="icon">📂</div>
-                            <p>No cases found for this category</p>
+                            <p>No cases found for this subject</p>
                         </div>
                     `;
                     return;
