@@ -304,6 +304,12 @@
             font-weight: 500;
             fill: #374151;
             cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .category-label:hover {
+            fill: #1f2937;
+            font-weight: bold;
         }
         
         .controls {
@@ -745,12 +751,12 @@
                     .attr('cursor', 'pointer')
                     .style('pointer-events', 'all');
                 
-                // Category labels with responsive text length
+                // Category labels with responsive text length and click handling
                 const isMobile = window.innerWidth <= 768;
                 const maxCategoryLength = isMobile ? 20 : (window.innerWidth <= 1024 ? 25 : 35);
                 const labelFontSize = isMobile ? '10px' : (window.innerWidth <= 1024 ? '11px' : '12px');
                 
-                this.g.selectAll('.category-label')
+                const categoryLabels = this.g.selectAll('.category-label')
                     .data(this.processedData)
                     .enter()
                     .append('text')
@@ -761,8 +767,44 @@
                     .attr('text-anchor', 'end')
                     .style('font-size', labelFontSize)
                     .style('font-weight', '500')
+                    .style('cursor', 'pointer')
+                    .style('transition', 'all 0.2s ease')
                     .text(d => this.truncateText(d.category, maxCategoryLength))
-                    .append('title')
+                    .on('mouseover', (event, d) => {
+                        // Highlight the label on hover
+                        d3.select(event.target)
+                            .style('fill', '#1f2937')
+                            .style('font-weight', 'bold');
+                        // Also show tooltip
+                        this.showTooltip(event, d);
+                        // Highlight the corresponding visual bar
+                        this.g.selectAll('.category-bar')
+                            .filter(barData => barData === d)
+                            .style('opacity', 0.8)
+                            .style('stroke-width', 2);
+                    })
+                    .on('mousemove', (event) => {
+                        this.moveTooltip(event);
+                    })
+                    .on('mouseout', (event, d) => {
+                        // Reset label styling
+                        d3.select(event.target)
+                            .style('fill', '#374151')
+                            .style('font-weight', '500');
+                        // Hide tooltip
+                        this.hideTooltip();
+                        // Reset the visual bar highlight
+                        this.g.selectAll('.category-bar')
+                            .filter(barData => barData === d)
+                            .style('opacity', 1)
+                            .style('stroke-width', 1);
+                    })
+                    .on('click', (event, d) => {
+                        this.selectCategory(d);
+                    });
+                
+                // Add tooltips to labels
+                categoryLabels.append('title')
                     .text(d => d.category);
                 
                 // Case count labels on bars with responsive sizing
@@ -1021,6 +1063,36 @@
                     .style('font-size', labelFontSize)
                     .text(d => this.truncateText(d.category, maxCategoryLength));
                 
+                // Re-attach event handlers to labels after update
+                this.g.selectAll('.category-label')
+                    .style('cursor', 'pointer')
+                    .on('mouseover', (event, d) => {
+                        d3.select(event.target)
+                            .style('fill', '#1f2937')
+                            .style('font-weight', 'bold');
+                        this.showTooltip(event, d);
+                        this.g.selectAll('.category-bar')
+                            .filter(barData => barData === d)
+                            .style('opacity', 0.8)
+                            .style('stroke-width', 2);
+                    })
+                    .on('mousemove', (event) => {
+                        this.moveTooltip(event);
+                    })
+                    .on('mouseout', (event, d) => {
+                        d3.select(event.target)
+                            .style('fill', '#374151')
+                            .style('font-weight', '500');
+                        this.hideTooltip();
+                        this.g.selectAll('.category-bar')
+                            .filter(barData => barData === d)
+                            .style('opacity', 1)
+                            .style('stroke-width', 1);
+                    })
+                    .on('click', (event, d) => {
+                        this.selectCategory(d);
+                    });
+                
                 // Update case counts with responsive sizing
                 const countFontSize = isMobile ? '9px' : (window.innerWidth <= 1024 ? '10px' : '11px');
                 const countText = isMobile ? (d => `${d.caseCount}`) : (d => `${d.caseCount} cases`);
@@ -1077,7 +1149,8 @@
                 document.addEventListener('click', (event) => {
                     if (!this.sidebar.contains(event.target) && 
                         !event.target.closest('.category-bar') && 
-                        !event.target.closest('.category-click-overlay')) {
+                        !event.target.closest('.category-click-overlay') &&
+                        !event.target.closest('.category-label')) {
                         this.clearSelection();
                     }
                 });
