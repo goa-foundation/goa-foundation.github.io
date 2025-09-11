@@ -339,6 +339,72 @@
             background: #1d4ed8;
         }
         
+        .filters {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        
+        .tag-filters-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            max-width: 80%;
+        }
+        
+        .tag-filter-button {
+            padding: 4px 12px;
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        
+        .tag-filter-button:hover {
+            background: #e5e7eb;
+            border-color: #9ca3af;
+        }
+        
+        .tag-filter-button.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        
+        .tag-filter-button.active:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+        
+        .clear-filters-button {
+            padding: 4px 12px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        
+        .clear-filters-button:hover {
+            background: #dc2626;
+        }
+        
+        .clear-filters-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
         
         @media (max-width: 768px) {
             .timeline-container {
@@ -356,6 +422,17 @@
                 flex-direction: column;
                 align-items: center;
                 gap: 8px;
+            }
+            
+            .filters {
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .tag-filters-container {
+                max-width: 100%;
+                justify-content: center;
             }
             
             .sort-button {
@@ -446,6 +523,15 @@
                 <button id="sort-alpha" class="sort-button">Alphabetical</button>
             </div>
             
+            <!-- Filters -->
+            <div class="filters">
+                <label class="text-sm font-medium text-gray-700">Filter by Tags:</label>
+                <div id="tag-filters" class="tag-filters-container">
+                    <!-- Tag filter buttons will be dynamically generated here -->
+                </div>
+                <button id="clear-filters" class="clear-filters-button">Clear All</button>
+            </div>
+            
             <!-- Main layout with timeline and sidebar -->
             <div class="main-layout">
                 <!-- Timeline section -->
@@ -496,6 +582,7 @@
         class GoaFoundationTimeline {
             constructor() {
                 this.data = [];
+                this.filteredData = [];
                 this.processedData = [];
                 // Initial margins - will be adjusted in setupDimensions based on screen size
                 this.margin = { top: 50, right: 50, bottom: 80, left: 250 };
@@ -507,6 +594,8 @@
                 this.selectedCategory = null;
                 this.sidebar = document.getElementById('case-sidebar');
                 this.resizeTimeout = null;
+                this.activeTags = new Set();
+                this.allTags = [];
                 
                 this.init();
             }
@@ -514,9 +603,12 @@
             async init() {
                 try {
                     await this.loadData();
+                    this.extractTags();
+                    this.applyFilters();
                     this.processData();
                     this.setupDimensions();
                     this.createVisualization();
+                    this.createTagFilters();
                     this.showContent();
                 } catch (error) {
                     this.showError(error.message);
@@ -540,9 +632,37 @@
                 }
             }
             
+            extractTags() {
+                const allTags = new Set();
+                
+                this.data.forEach(item => {
+                    if (item.Tags && item.Tags.trim()) {
+                        const tags = item.Tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+                        tags.forEach(tag => allTags.add(tag));
+                    }
+                });
+                
+                this.allTags = Array.from(allTags).sort();
+            }
+            
+            applyFilters() {
+                if (this.activeTags.size === 0) {
+                    this.filteredData = [...this.data];
+                } else {
+                    this.filteredData = this.data.filter(item => {
+                        if (!item.Tags || !item.Tags.trim()) {
+                            return false;
+                        }
+                        
+                        const itemTags = item.Tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+                        return Array.from(this.activeTags).some(activeTag => itemTags.includes(activeTag));
+                    });
+                }
+            }
+            
             processData() {
-                // Group data by category
-                const groupedData = d3.group(this.data, d => d.Category);
+                // Group filtered data by category
+                const groupedData = d3.group(this.filteredData, d => d.Category);
                 
                 this.processedData = Array.from(groupedData, ([category, cases]) => {
                     const years = cases.map(d => +d.Year).filter(year => !isNaN(year));
@@ -678,6 +798,77 @@
                 
                 // Setup event handlers
                 this.setupEventHandlers();
+            }
+            
+            createTagFilters() {
+                const container = document.getElementById('tag-filters');
+                const clearButton = document.getElementById('clear-filters');
+                
+                // Clear existing filters
+                container.innerHTML = '';
+                
+                // Create filter buttons for each tag
+                this.allTags.forEach(tag => {
+                    const button = document.createElement('button');
+                    button.textContent = tag;
+                    button.className = 'tag-filter-button';
+                    button.setAttribute('data-tag', tag);
+                    
+                    button.addEventListener('click', () => {
+                        this.toggleTagFilter(tag, button);
+                    });
+                    
+                    container.appendChild(button);
+                });
+                
+                // Update clear button state
+                this.updateClearButton();
+                
+                // Setup clear all functionality
+                clearButton.addEventListener('click', () => {
+                    this.clearAllFilters();
+                });
+            }
+            
+            toggleTagFilter(tag, button) {
+                if (this.activeTags.has(tag)) {
+                    this.activeTags.delete(tag);
+                    button.classList.remove('active');
+                } else {
+                    this.activeTags.add(tag);
+                    button.classList.add('active');
+                }
+                
+                this.updateVisualizationWithFilters();
+                this.updateClearButton();
+            }
+            
+            clearAllFilters() {
+                this.activeTags.clear();
+                
+                // Reset all button states
+                document.querySelectorAll('.tag-filter-button').forEach(button => {
+                    button.classList.remove('active');
+                });
+                
+                this.updateVisualizationWithFilters();
+                this.updateClearButton();
+            }
+            
+            updateClearButton() {
+                const clearButton = document.getElementById('clear-filters');
+                clearButton.disabled = this.activeTags.size === 0;
+            }
+            
+            updateVisualizationWithFilters() {
+                this.applyFilters();
+                this.processData();
+                this.setupDimensions();
+                this.createVisualization();
+                
+                // Reset selection since data has changed
+                this.selectedCategory = null;
+                this.sidebar.classList.add('collapsed');
             }
             
             setupScales() {
@@ -1114,7 +1305,7 @@
             }
             
             updateStatistics() {
-                const totalCases = this.data.length;
+                const totalCases = this.filteredData.length;
                 const totalCategories = this.processedData.length;
                 const years = this.processedData.flatMap(d => [d.minYear, d.maxYear]);
                 const yearSpan = d3.max(years) - d3.min(years) + 1;
