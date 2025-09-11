@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>Goa Foundation Legal Cases Timeline</title>
+    <title>Goa Foundation Petition Library</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
@@ -90,6 +90,54 @@
         
         .sidebar-close:hover {
             background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .sidebar-sort-controls {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+            align-items: center;
+        }
+        
+        .sidebar-sort-option {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 500;
+            color: #d1d5db;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        
+        .sidebar-sort-option:hover {
+            color: white;
+        }
+        
+        .sidebar-sort-radio {
+            width: 12px;
+            height: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            font-weight: bold;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .sidebar-sort-option.active .sidebar-sort-radio {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+        
+        .sidebar-sort-option.active {
             color: white;
         }
         
@@ -499,6 +547,25 @@
         </div>
     </header>
 
+    <!-- Statistics -->
+    <div id="stats" class="timeline-container mt-4 bg-white rounded-lg shadow-sm border border-gray-200 p-6 hidden">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Timeline Statistics</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600" id="total-cases">-</div>
+                <div class="text-sm text-gray-600">Total Cases</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-green-600" id="total-categories">-</div>
+                <div class="text-sm text-gray-600">Categories</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-purple-600" id="year-span">-</div>
+                <div class="text-sm text-gray-600">Year Span</div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main class="timeline-container">
         <!-- Loading indicator -->
@@ -544,33 +611,24 @@
                 <div class="sidebar collapsed" id="case-sidebar">
                     <div class="sidebar-header">
                         <button class="sidebar-close" id="sidebar-close" title="Close">×</button>
-                        <h3 class="sidebar-title" id="sidebar-title">Select a Category</h3>
-                        <p class="sidebar-subtitle" id="sidebar-subtitle">Hover over or click a timeline bar to view case details</p>
+                        <h3 class="sidebar-title" id="sidebar-title">All Legal Cases</h3>
+                        <p class="sidebar-subtitle" id="sidebar-subtitle">Loading cases...</p>
+                        <div class="sidebar-sort-controls" id="sidebar-sort-controls" style="display: none;">
+                            <div class="sidebar-sort-option active" id="sort-oldest-first">
+                                <div class="sidebar-sort-radio">×</div>
+                                <span>Oldest</span>
+                            </div>
+                            <div class="sidebar-sort-option" id="sort-newest-first">
+                                <div class="sidebar-sort-radio"></div>
+                                <span>Latest</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="sidebar-content" id="sidebar-content">
                         <div class="sidebar-empty">
                             <div class="icon">📊</div>
                             <p>Click on a timeline bar to view detailed case information</p>
                         </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Statistics -->
-            <div id="stats" class="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Timeline Statistics</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="text-center">
-                        <div class="text-2xl font-bold text-blue-600" id="total-cases">-</div>
-                        <div class="text-sm text-gray-600">Total Cases</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-2xl font-bold text-green-600" id="total-categories">-</div>
-                        <div class="text-sm text-gray-600">Categories</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-2xl font-bold text-purple-600" id="year-span">-</div>
-                        <div class="text-sm text-gray-600">Year Span</div>
                     </div>
                 </div>
             </div>
@@ -596,6 +654,7 @@
                 this.resizeTimeout = null;
                 this.activeTags = new Set();
                 this.allTags = [];
+                this.sidebarSortOrder = 'oldest'; // 'oldest' or 'newest'
                 
                 this.init();
             }
@@ -609,6 +668,7 @@
                     this.setupDimensions();
                     this.createVisualization();
                     this.createTagFilters();
+                    this.showAllCasesOnLoad();
                     this.showContent();
                 } catch (error) {
                     this.showError(error.message);
@@ -886,20 +946,30 @@
             }
             
             createAxes() {
-                // X-axis (years)
-                const xAxis = d3.axisBottom(this.xScale)
+                // X-axis (years) - bottom
+                const xAxisBottom = d3.axisBottom(this.xScale)
                     .tickFormat(d3.format('d'))
                     .ticks(Math.min(10, this.xScale.domain()[1] - this.xScale.domain()[0]));
                 
                 this.g.append('g')
-                    .attr('class', 'axis x-axis')
+                    .attr('class', 'axis x-axis x-axis-bottom')
                     .attr('transform', `translate(0,${this.height})`)
-                    .call(xAxis);
+                    .call(xAxisBottom);
+                
+                // X-axis (years) - top
+                const xAxisTop = d3.axisTop(this.xScale)
+                    .tickFormat(d3.format('d'))
+                    .ticks(Math.min(10, this.xScale.domain()[1] - this.xScale.domain()[0]));
+                
+                this.g.append('g')
+                    .attr('class', 'axis x-axis x-axis-top')
+                    .attr('transform', `translate(0,0)`)
+                    .call(xAxisTop);
                 
                 // X-axis label
                 this.g.append('text')
                     .attr('x', this.width / 2)
-                    .attr('y', this.height + 40)
+                    .attr('y', -25)
                     .attr('text-anchor', 'middle')
                     .style('font-size', '14px')
                     .style('font-weight', 'bold')
@@ -1021,6 +1091,7 @@
                     .style('font-weight', 'bold')
                     .style('fill', 'white')
                     .style('text-shadow', '1px 1px 2px rgba(0,0,0,0.7)')
+                    .style('pointer-events', 'none')
                     .text(countText);
             }
             
@@ -1301,6 +1372,7 @@
                     })
                     .attr('y', d => this.yScale(d.category) + this.yScale.bandwidth() / 2)
                     .style('font-size', countFontSize)
+                    .style('pointer-events', 'none')
                     .text(countText);
             }
             
@@ -1431,6 +1503,7 @@
             
             showContent() {
                 document.getElementById('loading').style.display = 'none';
+                document.getElementById('stats').classList.remove('hidden');
                 document.getElementById('timeline-content').classList.remove('hidden');
             }
             
@@ -1438,6 +1511,328 @@
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('error').classList.remove('hidden');
                 document.getElementById('error-message').textContent = message;
+            }
+            
+            selectCategory(data) {
+                // Update selected state
+                this.selectedCategory = data;
+                
+                // Update visual selection on bars
+                this.g.selectAll('.category-bar')
+                    .classed('selected', d => d === data);
+                
+                // Show sidebar with full details (hide sort controls for single category)
+                this.showSidebar(data, true);
+            }
+            
+            showSidebar(data, isPermanent = false) {
+                // Show sidebar
+                this.sidebar.classList.remove('collapsed');
+                
+                // Update sidebar header
+                document.getElementById('sidebar-title').textContent = data.category;
+                document.getElementById('sidebar-subtitle').textContent = 
+                    `${data.minYear}-${data.maxYear} • ${data.caseCount} cases`;
+                
+                // Show sort controls even for single category
+                const sortControls = document.getElementById('sidebar-sort-controls');
+                if (sortControls) {
+                    sortControls.style.display = 'flex';
+                }
+                
+                // Update sidebar content
+                this.updateSidebarContent(data);
+            }
+            
+            hideSidebar() {
+                if (!this.selectedCategory) {
+                    this.sidebar.classList.add('collapsed');
+                }
+            }
+            
+            updateSidebarContent(data) {
+                const content = document.getElementById('sidebar-content');
+                
+                if (data.cases.length === 0) {
+                    content.innerHTML = `
+                        <div class="sidebar-empty">
+                            <div class="icon">📂</div>
+                            <p>No cases found for this category</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                data.cases.forEach(caseItem => {
+                    html += this.createCaseListItem(caseItem);
+                });
+                
+                content.innerHTML = html;
+            }
+            
+            createCaseListItem(caseItem) {
+                const links = this.getCaseLinks(caseItem);
+                
+                return `
+                    <div class="case-list-item">
+                        <div class="case-header">
+                            <div class="case-year">${caseItem.Year}</div>
+                            <div class="case-reference">${caseItem.Reference || 'No Reference'}</div>
+                        </div>
+                        ${caseItem.Description ? `<div class="case-description">${caseItem.Description}</div>` : ''}
+                        ${links.length > 0 ? `<div class="case-links">${links.join('')}</div>` : ''}
+                    </div>
+                `;
+            }
+            
+            getCaseLinks(caseItem) {
+                const links = [];
+                
+                if (caseItem.Archive && caseItem.Archive.trim()) {
+                    links.push(`<a href="${caseItem.Archive}" target="_blank" class="case-link archive">📁 Archive</a>`);
+                }
+                
+                if (caseItem.Petition && caseItem.Petition.trim()) {
+                    links.push(`<a href="${caseItem.Petition}" target="_blank" class="case-link petition">📄 Petition</a>`);
+                }
+                
+                if (caseItem['Additional Documents'] && caseItem['Additional Documents'].trim()) {
+                    links.push(`<a href="${caseItem['Additional Documents']}" target="_blank" class="case-link documents">📋 Documents</a>`);
+                }
+                
+                if (caseItem.Order && caseItem.Order.trim()) {
+                    links.push(`<a href="${caseItem.Order}" target="_blank" class="case-link order">⚖️ Order</a>`);
+                }
+                
+                return links;
+            }
+            
+            clearSelection() {
+                this.selectedCategory = null;
+                this.g.selectAll('.category-bar')
+                    .classed('selected', false)
+                    .style('opacity', 1)
+                    .style('stroke-width', 1);
+                
+                // Show all cases again instead of hiding sidebar
+                this.showAllCasesOnLoad();
+            }
+            
+            updateVisualizationWithFilters() {
+                this.applyFilters();
+                this.processData();
+                this.setupDimensions();
+                this.createVisualization();
+                
+                // Reset selection since data has changed
+                this.selectedCategory = null;
+                
+                // Show all cases again after filter change
+                this.showAllCasesOnLoad();
+            }
+            
+            applyFilters() {
+                if (this.activeTags.size === 0) {
+                    this.filteredData = [...this.data];
+                } else {
+                    this.filteredData = this.data.filter(item => {
+                        if (!item.Tags || !item.Tags.trim()) {
+                            return false;
+                        }
+                        
+                        const itemTags = item.Tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+                        return Array.from(this.activeTags).some(activeTag => itemTags.includes(activeTag));
+                    });
+                }
+            }
+            
+            showAllCasesOnLoad() {
+                // Collect all cases from all categories
+                const allCases = [];
+                this.processedData.forEach(categoryData => {
+                    categoryData.cases.forEach(caseItem => {
+                        allCases.push({
+                            ...caseItem,
+                            category: categoryData.category
+                        });
+                    });
+                });
+                
+                // Sort based on current sort order
+                this.sortAllCases(allCases);
+                
+                // Show sidebar with all cases
+                this.sidebar.classList.remove('collapsed');
+                
+                // Update sidebar header
+                document.getElementById('sidebar-title').textContent = 'All Legal Cases';
+                document.getElementById('sidebar-subtitle').textContent = `${allCases.length} cases`;
+                
+                // Show sort controls
+                const sortControls = document.getElementById('sidebar-sort-controls');
+                if (sortControls) {
+                    sortControls.style.display = 'flex';
+                }
+                
+                // Update sidebar content with all cases
+                this.updateSidebarContentWithAllCases(allCases);
+                
+                // Setup sort control event handlers
+                this.setupSidebarSortControls();
+            }
+            
+            sortAllCases(allCases) {
+                if (this.sidebarSortOrder === 'oldest') {
+                    // Sort by year (oldest first), then by reference
+                    allCases.sort((a, b) => {
+                        const yearDiff = (+a.Year) - (+b.Year);
+                        if (yearDiff !== 0) return yearDiff;
+                        return a.Reference.localeCompare(b.Reference);
+                    });
+                } else {
+                    // Sort by year (newest first), then by reference
+                    allCases.sort((a, b) => {
+                        const yearDiff = (+b.Year) - (+a.Year);
+                        if (yearDiff !== 0) return yearDiff;
+                        return a.Reference.localeCompare(b.Reference);
+                    });
+                }
+            }
+            
+            updateSidebarContentWithAllCases(allCases) {
+                const content = document.getElementById('sidebar-content');
+                
+                if (allCases.length === 0) {
+                    content.innerHTML = `
+                        <div class="sidebar-empty">
+                            <div class="icon">📂</div>
+                            <p>No cases found</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                allCases.forEach(caseItem => {
+                    html += this.createCaseListItemWithCategory(caseItem);
+                });
+                
+                content.innerHTML = html;
+            }
+            
+            createCaseListItemWithCategory(caseItem) {
+                const links = this.getCaseLinks(caseItem);
+                
+                return `
+                    <div class="case-list-item">
+                        <div class="case-header">
+                            <div class="case-year">${caseItem.Year}</div>
+                            <div class="case-reference">${caseItem.Reference || 'No Reference'}</div>
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 6px; font-weight: 500;">
+                            📂 ${caseItem.category}
+                        </div>
+                        ${caseItem.Description ? `<div class="case-description">${caseItem.Description}</div>` : ''}
+                        ${links.length > 0 ? `<div class="case-links">${links.join('')}</div>` : ''}
+                    </div>
+                `;
+            }
+            
+            setupSidebarSortControls() {
+                const oldestOption = document.getElementById('sort-oldest-first');
+                const newestOption = document.getElementById('sort-newest-first');
+                
+                if (!oldestOption || !newestOption) {
+                    return; // Elements don't exist yet
+                }
+                
+                // Remove existing event listeners and add new ones
+                oldestOption.replaceWith(oldestOption.cloneNode(true));
+                newestOption.replaceWith(newestOption.cloneNode(true));
+                
+                // Get the new references
+                const newOldestOption = document.getElementById('sort-oldest-first');
+                const newNewestOption = document.getElementById('sort-newest-first');
+                
+                if (newOldestOption && newNewestOption) {
+                    newOldestOption.addEventListener('click', () => {
+                        this.setSidebarSortOrder('oldest');
+                    });
+                    
+                    newNewestOption.addEventListener('click', () => {
+                        this.setSidebarSortOrder('newest');
+                    });
+                }
+            }
+            
+            setSidebarSortOrder(order) {
+                this.sidebarSortOrder = order;
+                
+                // Update radio button states
+                const oldestOption = document.getElementById('sort-oldest-first');
+                const newestOption = document.getElementById('sort-newest-first');
+                
+                if (oldestOption && newestOption) {
+                    oldestOption.classList.toggle('active', order === 'oldest');
+                    newestOption.classList.toggle('active', order === 'newest');
+                    
+                    // Update radio indicators
+                    const oldestRadio = oldestOption.querySelector('.sidebar-sort-radio');
+                    const newestRadio = newestOption.querySelector('.sidebar-sort-radio');
+                    
+                    if (oldestRadio && newestRadio) {
+                        oldestRadio.textContent = order === 'oldest' ? '×' : '';
+                        newestRadio.textContent = order === 'newest' ? '×' : '';
+                    }
+                }
+                
+                // Re-sort and update the sidebar content
+                if (this.selectedCategory) {
+                    // If viewing a single category, sort that category's cases
+                    this.updateSidebarContentSorted(this.selectedCategory);
+                } else {
+                    // If viewing all cases, use the existing method
+                    this.showAllCasesOnLoad();
+                }
+            }
+            
+            updateSidebarContentSorted(data) {
+                // Sort the category's cases based on current sort order
+                const sortedCases = [...data.cases];
+                if (this.sidebarSortOrder === 'oldest') {
+                    sortedCases.sort((a, b) => {
+                        const yearDiff = (+a.Year) - (+b.Year);
+                        if (yearDiff !== 0) return yearDiff;
+                        return a.Reference.localeCompare(b.Reference);
+                    });
+                } else {
+                    sortedCases.sort((a, b) => {
+                        const yearDiff = (+b.Year) - (+a.Year);
+                        if (yearDiff !== 0) return yearDiff;
+                        return a.Reference.localeCompare(b.Reference);
+                    });
+                }
+                
+                // Update sidebar content with sorted cases
+                const content = document.getElementById('sidebar-content');
+                
+                if (sortedCases.length === 0) {
+                    content.innerHTML = `
+                        <div class="sidebar-empty">
+                            <div class="icon">📂</div>
+                            <p>No cases found for this category</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                sortedCases.forEach(caseItem => {
+                    html += this.createCaseListItem(caseItem);
+                });
+                
+                content.innerHTML = html;
             }
         }
         
