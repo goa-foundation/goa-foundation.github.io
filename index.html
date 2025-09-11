@@ -12,6 +12,9 @@
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Google Fonts - Matching Goa Foundation typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
     <!-- D3.js -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     
@@ -20,6 +23,23 @@
     
     <!-- Custom CSS -->
     <style>
+        /* Goa Foundation Theme */
+        :root {
+            --gf-background: #FBF7E4;
+            --gf-primary: #905756;
+            --gf-primary-dark: #7A4B4A;
+            --gf-primary-light: #A67D7C;
+            --gf-text-dark: #4A3635;
+            --gf-text-light: #6B5554;
+            --gf-white: #FFFFFF;
+            --gf-border: #E8DFC7;
+            --gf-shadow: rgba(144, 87, 86, 0.1);
+        }
+        
+        * {
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+        
         .timeline-container {
             max-width: 1400px;
             margin: 0 auto;
@@ -39,10 +59,10 @@
         
         .sidebar {
             width: 400px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e5e7eb;
+            background: var(--gf-white);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px var(--gf-shadow);
+            border: 2px solid var(--gf-border);
             overflow: hidden;
             transition: all 0.3s ease;
         }
@@ -54,10 +74,10 @@
         }
         
         .sidebar-header {
-            background: #374151;
-            color: white;
-            padding: 16px;
-            border-bottom: 1px solid #4b5563;
+            background: var(--gf-primary);
+            color: var(--gf-white);
+            padding: 20px;
+            border-bottom: 2px solid var(--gf-primary-dark);
             position: relative;
         }
         
@@ -70,27 +90,30 @@
         
         .sidebar-subtitle {
             font-size: 12px;
-            color: #d1d5db;
+            color: var(--gf-background);
             margin: 4px 0 0 0;
+            opacity: 0.9;
         }
         
         .sidebar-close {
             position: absolute;
-            top: 16px;
-            right: 16px;
+            top: 20px;
+            right: 20px;
             background: none;
             border: none;
-            color: #d1d5db;
-            font-size: 18px;
+            color: var(--gf-background);
+            font-size: 20px;
             cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
+            padding: 8px;
+            border-radius: 6px;
             transition: all 0.2s;
+            opacity: 0.8;
         }
         
         .sidebar-close:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
+            background: var(--gf-primary-dark);
+            color: var(--gf-white);
+            opacity: 1;
         }
         
         .sidebar-sort-controls {
@@ -132,9 +155,9 @@
         }
         
         .sidebar-sort-option.active .sidebar-sort-radio {
-            background: #3b82f6;
-            border-color: #3b82f6;
-            color: white;
+            background: var(--gf-background);
+            border-color: var(--gf-background);
+            color: var(--gf-primary);
         }
         
         .sidebar-sort-option.active {
@@ -170,10 +193,10 @@
         }
         
         .case-year {
-            background: #3b82f6;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
+            background: var(--gf-primary);
+            color: var(--gf-white);
+            padding: 6px 12px;
+            border-radius: 6px;
             font-size: 12px;
             font-weight: bold;
             flex-shrink: 0;
@@ -181,16 +204,16 @@
         
         .case-reference {
             font-weight: 600;
-            color: #1f2937;
+            color: var(--gf-text-dark);
             font-size: 14px;
             margin-left: 8px;
             flex: 1;
         }
         
         .case-description {
-            color: #4b5563;
+            color: var(--gf-text-light);
             font-size: 13px;
-            line-height: 1.4;
+            line-height: 1.5;
             margin-bottom: 12px;
         }
         
@@ -203,25 +226,28 @@
         .case-link {
             display: inline-flex;
             align-items: center;
-            padding: 4px 8px;
-            background: #f3f4f6;
-            color: #374151;
+            padding: 6px 12px;
+            background: var(--gf-border);
+            color: var(--gf-text-dark);
             text-decoration: none;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 11px;
-            font-weight: 500;
+            font-weight: 600;
             transition: all 0.2s;
+            border: 1px solid var(--gf-border);
         }
         
         .case-link:hover {
-            background: #e5e7eb;
+            background: var(--gf-primary);
+            color: var(--gf-white);
             transform: translateY(-1px);
+            box-shadow: 0 2px 8px var(--gf-shadow);
         }
         
-        .case-link.archive { background: #dbeafe; color: #1d4ed8; }
-        .case-link.petition { background: #dcfce7; color: #166534; }
-        .case-link.documents { background: #fef3c7; color: #92400e; }
-        .case-link.order { background: #fce7f3; color: #be185d; }
+        .case-link.archive { background: var(--gf-primary-light); color: var(--gf-white); }
+        .case-link.petition { background: var(--gf-primary); color: var(--gf-white); }
+        .case-link.documents { background: var(--gf-primary-dark); color: var(--gf-white); }
+        .case-link.order { background: var(--gf-text-dark); color: var(--gf-white); }
         
         .sidebar-empty {
             padding: 40px 20px;
@@ -272,32 +298,33 @@
         
         .tooltip {
             position: absolute;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.95);
-            color: white;
-            border-radius: 8px;
+            padding: 20px;
+            background: var(--gf-primary);
+            color: var(--gf-white);
+            border-radius: 12px;
             font-size: 12px;
             pointer-events: none;
             z-index: 1000;
             max-width: 450px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 24px var(--gf-shadow);
+            backdrop-filter: blur(8px);
+            border: 2px solid var(--gf-primary-dark);
+            font-family: 'Source Sans Pro', sans-serif;
         }
         
         .tooltip h3 {
             margin: 0 0 10px 0;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
-            color: #fbbf24;
-            border-bottom: 1px solid #374151;
-            padding-bottom: 5px;
+            color: var(--gf-background);
+            border-bottom: 2px solid var(--gf-primary-dark);
+            padding-bottom: 8px;
         }
         
         .tooltip .case-item {
-            margin-bottom: 8px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #374151;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--gf-primary-dark);
         }
         
         .tooltip .case-item:last-child {
@@ -307,17 +334,18 @@
         
         .tooltip .year {
             font-weight: bold;
-            color: #60a5fa;
+            color: var(--gf-background);
         }
         
         .tooltip .reference {
-            color: #fbbf24;
-            font-weight: 500;
+            color: var(--gf-background);
+            font-weight: 600;
         }
         
         .tooltip .description {
-            color: #d1d5db;
-            margin: 3px 0;
+            color: var(--gf-white);
+            margin: 4px 0;
+            opacity: 0.9;
         }
         
         .tooltip .links {
@@ -325,38 +353,43 @@
         }
         
         .tooltip .links a {
-            color: #34d399;
+            color: var(--gf-background);
             text-decoration: none;
-            margin-right: 10px;
+            margin-right: 12px;
             font-size: 11px;
+            font-weight: 600;
         }
         
         .tooltip .links a:hover {
             text-decoration: underline;
+            opacity: 0.8;
         }
         
         .axis text {
             font-size: 12px;
-            fill: #4b5563;
+            fill: var(--gf-text-light);
+            font-family: 'Source Sans Pro', sans-serif;
+            font-weight: 500;
         }
         
         .axis path,
         .axis line {
             fill: none;
-            stroke: #9ca3af;
+            stroke: var(--gf-border);
             shape-rendering: crispEdges;
         }
         
         .category-label {
             font-size: 13px;
-            font-weight: 500;
-            fill: #374151;
+            font-weight: 600;
+            fill: var(--gf-text-dark);
             cursor: pointer;
             transition: all 0.2s ease;
+            font-family: 'Source Sans Pro', sans-serif;
         }
         
         .category-label:hover {
-            fill: #1f2937;
+            fill: var(--gf-primary);
             font-weight: bold;
         }
         
@@ -369,22 +402,25 @@
         }
         
         .sort-button {
-            padding: 8px 16px;
-            background: #3b82f6;
-            color: white;
-            border: none;
-            border-radius: 6px;
+            padding: 10px 20px;
+            background: var(--gf-white);
+            color: var(--gf-primary);
+            border: 2px solid var(--gf-primary);
+            border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
-            transition: background 0.2s;
+            font-weight: 600;
+            transition: all 0.2s;
         }
         
         .sort-button:hover {
-            background: #2563eb;
+            background: var(--gf-primary-light);
+            color: var(--gf-white);
         }
         
         .sort-button.active {
-            background: #1d4ed8;
+            background: var(--gf-primary);
+            color: var(--gf-white);
         }
         
         .filters {
@@ -403,53 +439,54 @@
         }
         
         .tag-filter-button {
-            padding: 4px 12px;
-            background: #f3f4f6;
-            color: #374151;
-            border: 1px solid #d1d5db;
-            border-radius: 16px;
+            padding: 6px 16px;
+            background: var(--gf-white);
+            color: var(--gf-primary);
+            border: 1px solid var(--gf-border);
+            border-radius: 20px;
             cursor: pointer;
             font-size: 12px;
-            font-weight: 500;
+            font-weight: 600;
             transition: all 0.2s;
             white-space: nowrap;
         }
         
         .tag-filter-button:hover {
-            background: #e5e7eb;
-            border-color: #9ca3af;
+            background: var(--gf-border);
+            border-color: var(--gf-primary);
         }
         
         .tag-filter-button.active {
-            background: #3b82f6;
-            color: white;
-            border-color: #3b82f6;
+            background: var(--gf-primary);
+            color: var(--gf-white);
+            border-color: var(--gf-primary);
         }
         
         .tag-filter-button.active:hover {
-            background: #2563eb;
-            border-color: #2563eb;
+            background: var(--gf-primary-dark);
+            border-color: var(--gf-primary-dark);
         }
         
         .clear-filters-button {
-            padding: 4px 12px;
-            background: #ef4444;
-            color: white;
+            padding: 6px 16px;
+            background: var(--gf-text-dark);
+            color: var(--gf-white);
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 12px;
-            font-weight: 500;
-            transition: background 0.2s;
+            font-weight: 600;
+            transition: all 0.2s;
             white-space: nowrap;
         }
         
         .clear-filters-button:hover {
-            background: #dc2626;
+            background: var(--gf-primary-dark);
         }
         
         .clear-filters-button:disabled {
-            background: #9ca3af;
+            background: var(--gf-border);
+            color: var(--gf-text-light);
             cursor: not-allowed;
         }
         
@@ -527,19 +564,24 @@
     </style>
 </head>
 
-<body class="bg-gray-50 min-h-screen">
+<body style="background-color: var(--gf-background); color: var(--gf-text-dark);" class="min-h-screen">
     <!-- Header -->
-    <header class="bg-gray-900 text-white p-4">
+    <header style="background-color: var(--gf-primary); color: var(--gf-white);" class="p-6 shadow-lg">
         <div class="timeline-container">
             <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-2xl font-bold">Goa Foundation Legal Cases Timeline</h1>
-                    <p class="text-gray-300 text-sm mt-1">Interactive visualization of legal cases by category and year</p>
+                <div class="flex items-center gap-4">
+                    <img src="goa-foundation-logo.png" alt="Goa Foundation Logo" class="h-16 w-16 object-contain">
+                    <div>
+                        <h1 class="text-3xl font-bold text-white">Goa Foundation</h1>
+                        <h2 class="text-xl font-semibold" style="color: var(--gf-background);">Legal Cases Timeline</h2>
+                        <p class="text-sm mt-1 opacity-90">Interactive visualization of legal cases by category and year</p>
+                    </div>
                 </div>
                 <div class="flex gap-3">
                     <a href="https://docs.google.com/spreadsheets/d/14-tOqKm1Wh5sTU32ycJ7GPn65tGsDZDDCviMg3fhe4c/edit?gid=1740040742#gid=1740040742" 
                        target="_blank" 
-                       class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-colors">
+                       style="background-color: var(--gf-primary-dark); border-color: var(--gf-primary-dark);"
+                       class="px-4 py-2 hover:opacity-90 rounded-lg text-sm transition-all duration-200 border-2 text-white font-medium">
                         📝 Edit Data
                     </a>
                 </div>
@@ -548,20 +590,21 @@
     </header>
 
     <!-- Statistics -->
-    <div id="stats" class="timeline-container mt-4 bg-white rounded-lg shadow-sm border border-gray-200 p-6 hidden">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Timeline Statistics</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div id="stats" class="timeline-container mt-6 rounded-lg shadow-lg border-2 p-8 hidden" 
+         style="background-color: var(--gf-white); border-color: var(--gf-border);">
+        <h3 class="text-xl font-bold mb-6" style="color: var(--gf-primary);">Timeline Statistics</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div class="text-center">
-                <div class="text-2xl font-bold text-blue-600" id="total-cases">-</div>
-                <div class="text-sm text-gray-600">Total Cases</div>
+                <div class="text-3xl font-bold mb-2" style="color: var(--gf-primary);" id="total-cases">-</div>
+                <div class="text-sm font-medium" style="color: var(--gf-text-light);">Total Cases</div>
             </div>
             <div class="text-center">
-                <div class="text-2xl font-bold text-green-600" id="total-categories">-</div>
-                <div class="text-sm text-gray-600">Categories</div>
+                <div class="text-3xl font-bold mb-2" style="color: var(--gf-primary-dark);" id="total-categories">-</div>
+                <div class="text-sm font-medium" style="color: var(--gf-text-light);">Categories</div>
             </div>
             <div class="text-center">
-                <div class="text-2xl font-bold text-purple-600" id="year-span">-</div>
-                <div class="text-sm text-gray-600">Year Span</div>
+                <div class="text-3xl font-bold mb-2" style="color: var(--gf-text-dark);" id="year-span">-</div>
+                <div class="text-sm font-medium" style="color: var(--gf-text-light);">Year Span</div>
             </div>
         </div>
     </div>
@@ -604,7 +647,8 @@
                 <!-- Timeline section -->
                 <div class="timeline-section">
                     <!-- Timeline visualization -->
-                    <div id="timeline" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6"></div>
+                    <div id="timeline" class="rounded-lg shadow-lg border-2 p-8" 
+                         style="background-color: var(--gf-white); border-color: var(--gf-border);"></div>
                 </div>
                 
                 <!-- Sidebar -->
@@ -648,7 +692,20 @@
                 this.height = 0; // Will be calculated based on data
                 this.rowHeight = 40;
                 this.currentSort = 'year';
-                this.colors = d3.scaleOrdinal(d3.schemeCategory10);
+                // Goa Foundation color palette
+                const gfColors = [
+                    '#905756', // Primary
+                    '#A67D7C', // Primary light
+                    '#7A4B4A', // Primary dark
+                    '#4A3635', // Text dark
+                    '#6B5554', // Text light
+                    '#8D6B5F', // Variation 1
+                    '#B5938B', // Variation 2
+                    '#6E4F4E', // Variation 3
+                    '#9A7B73', // Variation 4
+                    '#7D5B56', // Variation 5
+                ];
+                this.colors = d3.scaleOrdinal(gfColors);
                 this.selectedCategory = null;
                 this.sidebar = document.getElementById('case-sidebar');
                 this.resizeTimeout = null;
@@ -973,7 +1030,8 @@
                     .attr('text-anchor', 'middle')
                     .style('font-size', '14px')
                     .style('font-weight', 'bold')
-                    .style('fill', '#374151')
+                    .style('fill', 'var(--gf-primary)')
+                    .style('font-family', 'Source Sans Pro, sans-serif')
                     .text('Year');
             }
             
