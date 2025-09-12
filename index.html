@@ -516,7 +516,7 @@
                        target="_blank" 
                        style="background-color: var(--gf-primary-dark); border-color: var(--gf-primary-dark);"
                        class="ml-2 px-1 py-1 hover:opacity-90 rounded-lg text-sm transition-all duration-200 border-2 text-white font-medium">
-                        Edit
+                        Data
                     </a>
                 </div>
             </div>
@@ -570,7 +570,7 @@
                 <div class="sidebar collapsed" id="case-sidebar">
                     <div class="sidebar-header">
                         <button class="sidebar-close" id="sidebar-close" title="Close">×</button>
-                        <h3 class="sidebar-title" id="sidebar-title">All Legal Cases</h3>
+                        <h3 class="sidebar-title" id="sidebar-title">All Cases</h3>
                         <p class="sidebar-subtitle" id="sidebar-subtitle">Loading cases...</p>
                         <div class="sidebar-sort-controls" id="sidebar-sort-controls" style="display: none;">
                             <div class="sidebar-sort-option active" id="sort-oldest-first">
@@ -1737,7 +1737,7 @@
                 this.sidebar.classList.remove('collapsed');
                 
                 // Update sidebar header based on active tags
-                let titleText = 'All Legal Cases';
+                let titleText = 'All Cases';
                 if (this.activeTags.size > 0) {
                     const activeTagsArray = Array.from(this.activeTags).sort();
                     if (activeTagsArray.length === 1) {
