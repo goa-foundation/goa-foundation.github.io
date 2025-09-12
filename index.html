@@ -393,36 +393,6 @@
             font-weight: bold !important;
         }
         
-        .controls {
-            margin-bottom: 20px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        
-        .sort-button {
-            padding: 10px 20px;
-            background: var(--gf-white);
-            color: var(--gf-primary);
-            border: 2px solid var(--gf-primary);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        
-        .sort-button:hover {
-            background: var(--gf-primary-light);
-            color: var(--gf-white);
-        }
-        
-        .sort-button.active {
-            background: var(--gf-primary);
-            color: var(--gf-white);
-        }
-        
         .filters {
             margin-bottom: 20px;
             display: flex;
@@ -435,11 +405,11 @@
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
-            max-width: 80%;
+            justify-content: center;
         }
         
         .tag-filter-button {
-            padding: 6px 16px;
+            padding: 2px 6px;
             background: var(--gf-white);
             color: var(--gf-primary);
             border: 1px solid var(--gf-border);
@@ -467,28 +437,6 @@
             border-color: var(--gf-primary-dark);
         }
         
-        .clear-filters-button {
-            padding: 6px 16px;
-            background: var(--gf-text-dark);
-            color: var(--gf-white);
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-        
-        .clear-filters-button:hover {
-            background: var(--gf-primary-dark);
-        }
-        
-        .clear-filters-button:disabled {
-            background: var(--gf-border);
-            color: var(--gf-text-light);
-            cursor: not-allowed;
-        }
         
         
         @media (max-width: 768px) {
@@ -502,13 +450,6 @@
                 padding: 10px;
             }
             
-            .controls {
-                justify-content: center;
-                flex-direction: column;
-                align-items: center;
-                gap: 8px;
-            }
-            
             .filters {
                 flex-direction: column;
                 align-items: center;
@@ -518,12 +459,6 @@
             .tag-filters-container {
                 max-width: 100%;
                 justify-content: center;
-            }
-            
-            .sort-button {
-                padding: 6px 12px;
-                font-size: 12px;
-                min-width: 120px;
             }
             
             #timeline {
@@ -545,16 +480,6 @@
                 max-width: 200px;
                 font-size: 9px;
                 padding: 8px;
-            }
-            
-            .controls {
-                gap: 6px;
-            }
-            
-            .sort-button {
-                padding: 5px 10px;
-                font-size: 11px;
-                min-width: 100px;
             }
             
             #timeline {
@@ -589,13 +514,20 @@
     </header>
 
     <!-- Statistics -->
-    <div id="stats" class="timeline-container mt-4 rounded-lg shadow-sm border p-4 hidden" 
-         style="background-color: var(--gf-white); border-color: var(--gf-border);">
+    <div id="stats" class="timeline-container p-4 hidden">
         <blockquote class="text-center italic mb-3 text-base" style="color: var(--gf-text-dark);">
             "The intergenerational equity principle asks us to ensure our children and future generations inherit at least as much as we did."
         </blockquote>
         <div class="text-center text-sm" style="color: var(--gf-text-light);">
             Library coverage: <u><span id="total-cases">-</span></u> Cases covering <u><span id="total-subjects">-</span></u> Subjects spanning <u><span id="year-span">-</span></u>.
+        </div>
+        
+        <!-- Filters -->
+        <div class="filters">
+            <label class="text-sm font-medium text-gray-700"></label>
+            <div id="tag-filters" class="tag-filters-container">
+                <!-- Tag filter buttons will be dynamically generated here -->
+            </div>
         </div>
     </div>
 
@@ -615,29 +547,12 @@
         
         <!-- Timeline content -->
         <div id="timeline-content" class="hidden">
-            <!-- Controls -->
-            <div class="controls">
-                <label class="text-sm font-medium text-gray-700">Sort by:</label>
-                <button id="sort-year" class="sort-button active">Year Range</button>
-                <button id="sort-reference" class="sort-button">Reference Count</button>
-                <button id="sort-alpha" class="sort-button">Alphabetical</button>
-            </div>
-            
-            <!-- Filters -->
-            <div class="filters">
-                <label class="text-sm font-medium text-gray-700">Filter by Tags:</label>
-                <div id="tag-filters" class="tag-filters-container">
-                    <!-- Tag filter buttons will be dynamically generated here -->
-                </div>
-                <button id="clear-filters" class="clear-filters-button">Clear All</button>
-            </div>
-            
             <!-- Main layout with timeline and sidebar -->
             <div class="main-layout">
                 <!-- Timeline section -->
                 <div class="timeline-section">
                     <!-- Timeline visualization -->
-                    <div id="timeline" class="rounded-lg shadow-lg border-2 p-8" 
+                    <div id="timeline" class="rounded-lg shadow-lg border-2 p-2" 
                          style="background-color: var(--gf-white); border-color: var(--gf-border);"></div>
                 </div>
                 
@@ -701,6 +616,7 @@
                 this.resizeTimeout = null;
                 this.activeTags = new Set();
                 this.allTags = [];
+                this.tagCounts = new Map();
                 this.sidebarSortOrder = 'oldest'; // 'oldest' or 'newest'
                 
                 this.init();
@@ -739,17 +655,38 @@
                 }
             }
             
+            // Helper function to parse tags supporting both comma and semicolon separators
+            parseTags(tagsString) {
+                if (!tagsString || !tagsString.trim()) {
+                    return [];
+                }
+                
+                // Split by both commas and semicolons, then clean up
+                return tagsString
+                    .split(/[,;]/)
+                    .map(tag => tag.trim())
+                    .filter(tag => tag);
+            }
+            
             extractTags() {
-                const allTags = new Set();
+                const tagCounts = new Map();
                 
                 this.data.forEach(item => {
                     if (item.Tags && item.Tags.trim()) {
-                        const tags = item.Tags.split(',').map(tag => tag.trim()).filter(tag => tag);
-                        tags.forEach(tag => allTags.add(tag));
+                        const tags = this.parseTags(item.Tags);
+                        tags.forEach(tag => {
+                            tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+                        });
                     }
                 });
                 
-                this.allTags = Array.from(allTags).sort();
+                // Convert to array of objects with tag and count, sorted by tag name
+                this.allTags = Array.from(tagCounts.entries())
+                    .map(([tag, count]) => ({ tag, count }))
+                    .sort((a, b) => a.tag.localeCompare(b.tag));
+                
+                // Also store the tag counts for easy access
+                this.tagCounts = tagCounts;
             }
             
             applyFilters() {
@@ -761,7 +698,7 @@
                             return false;
                         }
                         
-                        const itemTags = item.Tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+                        const itemTags = this.parseTags(item.Tags);
                         return Array.from(this.activeTags).some(activeTag => itemTags.includes(activeTag));
                     });
                 }
@@ -909,31 +846,42 @@
             
             createTagFilters() {
                 const container = document.getElementById('tag-filters');
-                const clearButton = document.getElementById('clear-filters');
                 
                 // Clear existing filters
                 container.innerHTML = '';
                 
+                // Calculate min and max counts for scaling
+                const counts = this.allTags.map(tagObj => tagObj.count);
+                const minCount = Math.min(...counts);
+                const maxCount = Math.max(...counts);
+                const baseSize = 12; // Base font size in px
+                const scaleRange = 4; // 4px variation as requested
+                
                 // Create filter buttons for each tag
-                this.allTags.forEach(tag => {
+                this.allTags.forEach(tagObj => {
                     const button = document.createElement('button');
-                    button.textContent = tag;
+                    button.textContent = `${tagObj.tag} (${tagObj.count})`;
                     button.className = 'tag-filter-button';
-                    button.setAttribute('data-tag', tag);
+                    button.setAttribute('data-tag', tagObj.tag);
+                    
+                    // Calculate scaled font size based on count
+                    let fontSize;
+                    if (maxCount === minCount) {
+                        // All tags have same count, use base size
+                        fontSize = baseSize;
+                    } else {
+                        // Scale between baseSize and baseSize + scaleRange
+                        const normalizedCount = (tagObj.count - minCount) / (maxCount - minCount);
+                        fontSize = baseSize + (normalizedCount * scaleRange);
+                    }
+                    
+                    button.style.fontSize = `${fontSize}px`;
                     
                     button.addEventListener('click', () => {
-                        this.toggleTagFilter(tag, button);
+                        this.toggleTagFilter(tagObj.tag, button);
                     });
                     
                     container.appendChild(button);
-                });
-                
-                // Update clear button state
-                this.updateClearButton();
-                
-                // Setup clear all functionality
-                clearButton.addEventListener('click', () => {
-                    this.clearAllFilters();
                 });
             }
             
@@ -947,25 +895,9 @@
                 }
                 
                 this.updateVisualizationWithFilters();
-                this.updateClearButton();
             }
             
-            clearAllFilters() {
-                this.activeTags.clear();
-                
-                // Reset all button states
-                document.querySelectorAll('.tag-filter-button').forEach(button => {
-                    button.classList.remove('active');
-                });
-                
-                this.updateVisualizationWithFilters();
-                this.updateClearButton();
-            }
             
-            updateClearButton() {
-                const clearButton = document.getElementById('clear-filters');
-                clearButton.disabled = this.activeTags.size === 0;
-            }
             
             updateVisualizationWithFilters() {
                 this.applyFilters();
@@ -1540,21 +1472,6 @@
             }
             
             setupEventHandlers() {
-                document.getElementById('sort-year').addEventListener('click', () => {
-                    this.setActiveSort('sort-year');
-                    this.sortData('year');
-                });
-                
-                document.getElementById('sort-reference').addEventListener('click', () => {
-                    this.setActiveSort('sort-reference');
-                    this.sortData('reference');
-                });
-                
-                document.getElementById('sort-alpha').addEventListener('click', () => {
-                    this.setActiveSort('sort-alpha');
-                    this.sortData('alpha');
-                });
-                
                 // Handle window resize
                 window.addEventListener('resize', () => {
                     this.handleResize();
@@ -1574,13 +1491,6 @@
                 document.getElementById('sidebar-close').addEventListener('click', () => {
                     this.clearSelection();
                 });
-            }
-            
-            setActiveSort(activeId) {
-                document.querySelectorAll('.sort-button').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                document.getElementById(activeId).classList.add('active');
             }
             
             handleResize() {
@@ -1818,7 +1728,7 @@
                             return false;
                         }
                         
-                        const itemTags = item.Tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+                        const itemTags = this.parseTags(item.Tags);
                         return Array.from(this.activeTags).some(activeTag => itemTags.includes(activeTag));
                     });
                 }
