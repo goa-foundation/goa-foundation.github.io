@@ -372,6 +372,18 @@
             font-weight: 500;
         }
         
+        @media (max-width: 768px) {
+            .axis text {
+                font-size: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .axis text {
+                font-size: 9px;
+            }
+        }
+        
         .axis path,
         .axis line {
             fill: none;
@@ -519,7 +531,7 @@
             "The intergenerational equity principle asks us to ensure our children and future generations inherit at least as much as we did."
         </blockquote>
         <div class="text-center text-sm" style="color: var(--gf-text-light);">
-            Library coverage: <u><span id="total-cases">-</span></u> Cases covering <u><span id="total-subjects">-</span></u> Subjects spanning <u><span id="year-span">-</span></u>.
+            Explore <u><span id="total-cases">-</span></u> Cases over  <u><span id="year-span">-</span></u>.
         </div>
         
         <!-- Filters -->
@@ -763,10 +775,10 @@
                 const isTablet = window.innerWidth <= 1024;
                 
                 if (isMobile) {
-                    this.margin = { top: 30, right: 20, bottom: 60, left: 280 };
+                    this.margin = { top: 45, right: 20, bottom: 60, left: 280 };
                     this.rowHeight = 35;
                 } else if (isTablet) {
-                    this.margin = { top: 40, right: 30, bottom: 70, left: 320 };
+                    this.margin = { top: 50, right: 30, bottom: 70, left: 320 };
                     this.rowHeight = 38;
                 } else {
                     this.margin = { top: 50, right: 50, bottom: 80, left: 380 };
@@ -925,10 +937,42 @@
             }
             
             createAxes() {
+                // Calculate responsive tick count based on available width and screen size
+                const isMobile = window.innerWidth <= 768;
+                const isTablet = window.innerWidth <= 1024;
+                
+                // Calculate available width for ticks
+                const availableWidth = this.width;
+                
+                // Estimate minimum space needed per tick (including label)
+                const minSpacePerTick = isMobile ? 60 : (isTablet ? 50 : 40);
+                
+                // Calculate maximum ticks that fit comfortably
+                const maxTicksBySpace = Math.floor(availableWidth / minSpacePerTick);
+                
+                // Get the year range
+                const yearRange = this.xScale.domain()[1] - this.xScale.domain()[0];
+                
+                // Calculate optimal tick count
+                let optimalTickCount;
+                if (isMobile) {
+                    // On mobile, be more conservative with ticks
+                    optimalTickCount = Math.min(maxTicksBySpace, Math.max(3, Math.floor(yearRange / 5)));
+                } else if (isTablet) {
+                    // On tablet, moderate number of ticks
+                    optimalTickCount = Math.min(maxTicksBySpace, Math.max(4, Math.floor(yearRange / 3)));
+                } else {
+                    // On desktop, allow more ticks but still respect space constraints
+                    optimalTickCount = Math.min(maxTicksBySpace, Math.max(5, Math.floor(yearRange / 2)));
+                }
+                
+                // Ensure we don't exceed the actual year range
+                optimalTickCount = Math.min(optimalTickCount, yearRange + 1);
+                
                 // X-axis (years) - bottom
                 const xAxisBottom = d3.axisBottom(this.xScale)
                     .tickFormat(d3.format('d'))
-                    .ticks(Math.min(10, this.xScale.domain()[1] - this.xScale.domain()[0]));
+                    .ticks(optimalTickCount);
                 
                 this.g.append('g')
                     .attr('class', 'axis x-axis x-axis-bottom')
@@ -938,19 +982,22 @@
                 // X-axis (years) - top
                 const xAxisTop = d3.axisTop(this.xScale)
                     .tickFormat(d3.format('d'))
-                    .ticks(Math.min(10, this.xScale.domain()[1] - this.xScale.domain()[0]));
+                    .ticks(optimalTickCount);
                 
                 this.g.append('g')
                     .attr('class', 'axis x-axis x-axis-top')
                     .attr('transform', `translate(0,0)`)
                     .call(xAxisTop);
                 
-                // X-axis label
+                // X-axis label with responsive positioning and sizing
+                const labelY = isMobile ? -20 : (isTablet ? -22 : -25);
+                const labelFontSize = isMobile ? '12px' : (isTablet ? '13px' : '14px');
+                
                 this.g.append('text')
                     .attr('x', this.width / 2)
-                    .attr('y', -25)
+                    .attr('y', labelY)
                     .attr('text-anchor', 'middle')
-                    .style('font-size', '14px')
+                    .style('font-size', labelFontSize)
                     .style('font-weight', 'bold')
                     .style('fill', 'var(--gf-primary)')
                     .style('font-family', 'Source Sans Pro, sans-serif')
@@ -1467,7 +1514,6 @@
                 const yearSpan = d3.max(years) - d3.min(years) + 1;
                 
                 document.getElementById('total-cases').textContent = totalCases;
-                document.getElementById('total-subjects').textContent = totalSubjects;
                 document.getElementById('year-span').textContent = yearSpan + ' years';
             }
             
