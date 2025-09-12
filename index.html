@@ -380,17 +380,17 @@
         }
         
         .subject-label {
-            font-size: 13px;
-            font-weight: 600;
-            fill: var(--gf-text-dark);
             cursor: pointer;
-            transition: all 0.2s ease;
             font-family: 'Source Sans Pro', sans-serif;
         }
         
-        .subject-label:hover {
-            fill: var(--gf-primary);
-            font-weight: bold;
+        .subject-label div {
+            transition: all 0.2s ease;
+        }
+        
+        .subject-label:hover div {
+            color: var(--gf-primary) !important;
+            font-weight: bold !important;
         }
         
         .controls {
@@ -595,7 +595,7 @@
             "The intergenerational equity principle asks us to ensure our children and future generations inherit at least as much as we did."
         </blockquote>
         <div class="text-center text-sm" style="color: var(--gf-text-light);">
-            Library coverage: <span id="total-cases">-</span> Cases covering <span id="total-subjects">-</span> Subjects spanning <span id="year-span">-</span>.
+            Library coverage: <u><span id="total-cases">-</span></u> Cases covering <u><span id="total-subjects">-</span></u> Subjects spanning <u><span id="year-span">-</span></u>.
         </div>
     </div>
 
@@ -677,7 +677,7 @@
                 this.filteredData = [];
                 this.processedData = [];
                 // Initial margins - will be adjusted in setupDimensions based on screen size
-                this.margin = { top: 50, right: 50, bottom: 80, left: 250 };
+                this.margin = { top: 50, right: 50, bottom: 80, left: 380 };
                 this.width = 0; // Will be calculated based on container size
                 this.height = 0; // Will be calculated based on data
                 this.rowHeight = 40;
@@ -826,13 +826,13 @@
                 const isTablet = window.innerWidth <= 1024;
                 
                 if (isMobile) {
-                    this.margin = { top: 30, right: 20, bottom: 60, left: 150 };
+                    this.margin = { top: 30, right: 20, bottom: 60, left: 280 };
                     this.rowHeight = 35;
                 } else if (isTablet) {
-                    this.margin = { top: 40, right: 30, bottom: 70, left: 200 };
+                    this.margin = { top: 40, right: 30, bottom: 70, left: 320 };
                     this.rowHeight = 38;
                 } else {
-                    this.margin = { top: 50, right: 50, bottom: 80, left: 250 };
+                    this.margin = { top: 50, right: 50, bottom: 80, left: 380 };
                     this.rowHeight = 40;
                 }
                 
@@ -1062,28 +1062,51 @@
                 
                 // Subject labels with responsive text length and click handling
                 const isMobile = window.innerWidth <= 768;
-                const maxSubjectLength = isMobile ? 20 : (window.innerWidth <= 1024 ? 25 : 35);
-                const labelFontSize = isMobile ? '10px' : (window.innerWidth <= 1024 ? '11px' : '12px');
+                const maxSubjectLength = isMobile ? 30 : (window.innerWidth <= 1024 ? 45 : 60);
+                const labelFontSize = isMobile ? '14px' : (window.innerWidth <= 1024 ? '16px' : '18px');
+                
+                // Calculate label width based on available margin space
+                const labelWidth = this.margin.left - 20; // Leave some padding
+                const rowHeight = this.yScale.bandwidth();
                 
                 const subjectLabels = this.g.selectAll('.subject-label')
                     .data(this.processedData)
                     .enter()
-                    .append('text')
+                    .append('foreignObject')
                     .attr('class', 'subject-label')
-                    .attr('x', -10)
-                    .attr('y', d => this.yScale(d.subject) + this.yScale.bandwidth() / 2)
-                    .attr('dy', '0.35em')
-                    .attr('text-anchor', 'end')
-                    .style('font-size', labelFontSize)
-                    .style('font-weight', '500')
+                    .attr('x', -labelWidth)
+                    .attr('y', d => this.yScale(d.subject))
+                    .attr('width', labelWidth)
+                    .attr('height', rowHeight)
                     .style('cursor', 'pointer')
-                    .style('transition', 'all 0.2s ease')
-                    .text(d => this.truncateText(d.subject, maxSubjectLength))
+                    .html(d => `
+                        <div style="
+                            width: 100%;
+                            height: 100%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: flex-end;
+                            font-size: ${labelFontSize};
+                            font-weight: 500;
+                            color: #374151;
+                            text-align: right;
+                            line-height: 1.2;
+                            padding: 2px 8px 2px 2px;
+                            box-sizing: border-box;
+                            transition: all 0.2s ease;
+                            word-wrap: break-word;
+                            overflow-wrap: break-word;
+                            hyphens: auto;
+                        ">${d.subject}</div>
+                    `)
                     .on('mouseover', (event, d) => {
-                        // Highlight the label on hover
-                        d3.select(event.target)
-                            .style('fill', '#1f2937')
-                            .style('font-weight', 'bold');
+                        // Highlight the label on hover by updating the div inside the foreignObject
+                        const foreignObject = d3.select(event.currentTarget);
+                        const div = foreignObject.select('div');
+                        if (!div.empty()) {
+                            div.style('color', '#1f2937')
+                               .style('font-weight', 'bold');
+                        }
                         // Also show tooltip
                         this.showTooltip(event, d);
                         // Highlight the corresponding visual bar
@@ -1097,24 +1120,27 @@
                     })
                     .on('mouseout', (event, d) => {
                         // Reset label styling
-                        d3.select(event.target)
-                            .style('fill', '#374151')
-                            .style('font-weight', '500');
+                        const foreignObject = d3.select(event.currentTarget);
+                        const div = foreignObject.select('div');
+                        if (!div.empty()) {
+                            div.style('color', '#374151')
+                               .style('font-weight', '500');
+                        }
                         // Hide tooltip
                         this.hideTooltip();
-                        // Reset the visual bar highlight
-                        this.g.selectAll('.subject-bar')
-                            .filter(barData => barData === d)
-                            .style('opacity', 1)
-                            .style('stroke-width', 1);
+                        // Reset the visual bar highlight only if not selected
+                        if (this.selectedSubject !== d) {
+                            this.g.selectAll('.subject-bar')
+                                .filter(barData => barData === d)
+                                .style('opacity', 1)
+                                .style('stroke-width', 1);
+                        }
                     })
                     .on('click', (event, d) => {
                         this.selectSubject(d);
                     });
                 
-                // Add tooltips to labels
-                subjectLabels.append('title')
-                    .text(d => d.subject);
+                // Note: Tooltips are no longer needed since we show full text in multiline labels
                 
                 // Case count labels on bars with responsive sizing
                 const countFontSize = isMobile ? '9px' : (window.innerWidth <= 1024 ? '10px' : '11px');
@@ -1164,11 +1190,13 @@
                     })
                     .on('mouseout', (event, d) => {
                         this.hideTooltip();
-                        // Reset the visual bar highlight
-                        this.g.selectAll('.subject-bar')
-                            .filter(barData => barData === d)
-                            .style('opacity', 1)
-                            .style('stroke-width', 1);
+                        // Reset the visual bar highlight only if not selected
+                        if (this.selectedSubject !== d) {
+                            this.g.selectAll('.subject-bar')
+                                .filter(barData => barData === d)
+                                .style('opacity', 1)
+                                .style('stroke-width', 1);
+                        }
                     })
                     .on('click', (event, d) => {
                         this.selectSubject(d);
@@ -1248,12 +1276,17 @@
                 // Update selected state
                 this.selectedSubject = data;
                 
-                // Update visual selection on bars
+                // Update visual selection on bars - keep hover-like effect active
                 this.g.selectAll('.subject-bar')
-                    .classed('selected', d => d === data);
+                    .classed('selected', d => d === data)
+                    .style('opacity', d => d === data ? 0.8 : 1)
+                    .style('stroke-width', d => d === data ? 2 : 1);
                 
                 // Show sidebar with full details
                 this.showSidebar(data, true);
+                
+                // Scroll to the case list view
+                this.scrollToCaseList();
             }
             
             showSidebar(data, isPermanent = false) {
@@ -1337,7 +1370,7 @@
             updateVisualization() {
                 this.setupScales();
                 
-                // Update bars
+                // Update bars and maintain selected state
                 this.g.selectAll('.subject-bar')
                     .data(this.processedData)
                     .transition()
@@ -1349,6 +1382,16 @@
                         const calculatedWidth = this.xScale(d.maxYear) - this.xScale(d.minYear);
                         const oneYearWidth = this.xScale(d.minYear + 1) - this.xScale(d.minYear);
                         return Math.max(calculatedWidth, oneYearWidth);
+                    })
+                    .end()
+                    .then(() => {
+                        // Restore selected state styling after transition
+                        if (this.selectedSubject) {
+                            this.g.selectAll('.subject-bar')
+                                .classed('selected', d => d === this.selectedSubject)
+                                .style('opacity', d => d === this.selectedSubject ? 0.8 : 1)
+                                .style('stroke-width', d => d === this.selectedSubject ? 2 : 1);
+                        }
                     });
                 
                 // Update click overlays
@@ -1362,24 +1405,79 @@
                 
                 // Update labels with responsive text length
                 const isMobile = window.innerWidth <= 768;
-                const maxSubjectLength = isMobile ? 20 : (window.innerWidth <= 1024 ? 25 : 35);
-                const labelFontSize = isMobile ? '10px' : (window.innerWidth <= 1024 ? '11px' : '12px');
+                const maxSubjectLength = isMobile ? 30 : (window.innerWidth <= 1024 ? 45 : 60);
+                const labelFontSize = isMobile ? '14px' : (window.innerWidth <= 1024 ? '16px' : '18px');
+                const labelWidth = this.margin.left - 20; // Leave some padding
+                const rowHeight = this.yScale.bandwidth();
                 
                 this.g.selectAll('.subject-label')
                     .data(this.processedData)
                     .transition()
                     .duration(500)
-                    .attr('y', d => this.yScale(d.subject) + this.yScale.bandwidth() / 2)
-                    .style('font-size', labelFontSize)
-                    .text(d => this.truncateText(d.subject, maxSubjectLength));
+                    .attr('y', d => this.yScale(d.subject))
+                    .attr('x', -labelWidth)
+                    .attr('width', labelWidth)
+                    .attr('height', rowHeight)
+                    .end()
+                    .then(() => {
+                        // Update the HTML content after the transition
+                        this.g.selectAll('.subject-label')
+                            .html(d => `
+                                <div style="
+                                    width: 100%;
+                                    height: 100%;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: flex-end;
+                                    font-size: ${labelFontSize};
+                                    font-weight: 500;
+                                    color: #374151;
+                                    text-align: right;
+                                    line-height: 1.2;
+                                    padding: 2px 8px 2px 2px;
+                                    box-sizing: border-box;
+                                    transition: all 0.2s ease;
+                                    word-wrap: break-word;
+                                    overflow-wrap: break-word;
+                                    hyphens: auto;
+                                ">${d.subject}</div>
+                            `);
+                    })
+                    .catch(() => {
+                        // Fallback if transition fails
+                        this.g.selectAll('.subject-label')
+                            .html(d => `
+                                <div style="
+                                    width: 100%;
+                                    height: 100%;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: flex-end;
+                                    font-size: ${labelFontSize};
+                                    font-weight: 500;
+                                    color: #374151;
+                                    text-align: right;
+                                    line-height: 1.2;
+                                    padding: 2px 8px 2px 2px;
+                                    box-sizing: border-box;
+                                    transition: all 0.2s ease;
+                                    word-wrap: break-word;
+                                    overflow-wrap: break-word;
+                                    hyphens: auto;
+                                ">${d.subject}</div>
+                            `);
+                    });
                 
                 // Re-attach event handlers to labels after update
                 this.g.selectAll('.subject-label')
                     .style('cursor', 'pointer')
                     .on('mouseover', (event, d) => {
-                        d3.select(event.target)
-                            .style('fill', '#1f2937')
-                            .style('font-weight', 'bold');
+                        const foreignObject = d3.select(event.currentTarget);
+                        const div = foreignObject.select('div');
+                        if (!div.empty()) {
+                            div.style('color', '#1f2937')
+                               .style('font-weight', 'bold');
+                        }
                         this.showTooltip(event, d);
                         this.g.selectAll('.subject-bar')
                             .filter(barData => barData === d)
@@ -1390,14 +1488,20 @@
                         this.moveTooltip(event);
                     })
                     .on('mouseout', (event, d) => {
-                        d3.select(event.target)
-                            .style('fill', '#374151')
-                            .style('font-weight', '500');
+                        const foreignObject = d3.select(event.currentTarget);
+                        const div = foreignObject.select('div');
+                        if (!div.empty()) {
+                            div.style('color', '#374151')
+                               .style('font-weight', '500');
+                        }
                         this.hideTooltip();
-                        this.g.selectAll('.subject-bar')
-                            .filter(barData => barData === d)
-                            .style('opacity', 1)
-                            .style('stroke-width', 1);
+                        // Reset the visual bar highlight only if not selected
+                        if (this.selectedSubject !== d) {
+                            this.g.selectAll('.subject-bar')
+                                .filter(barData => barData === d)
+                                .style('opacity', 1)
+                                .style('stroke-width', 1);
+                        }
                     })
                     .on('click', (event, d) => {
                         this.selectSubject(d);
@@ -1501,6 +1605,31 @@
                     .style('opacity', 1)
                     .style('stroke-width', 1);
                 this.sidebar.classList.add('collapsed');
+            }
+            
+            scrollToCaseList() {
+                // Scroll to the sidebar/case list view
+                setTimeout(() => {
+                    const sidebar = document.getElementById('case-sidebar');
+                    if (sidebar && !sidebar.classList.contains('collapsed')) {
+                        // On mobile, scroll to sidebar directly
+                        if (window.innerWidth <= 1024) {
+                            sidebar.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'start' 
+                            });
+                        } else {
+                            // On desktop, scroll to ensure the sidebar content is visible
+                            const sidebarContent = document.getElementById('sidebar-content');
+                            if (sidebarContent) {
+                                sidebarContent.scrollIntoView({ 
+                                    behavior: 'smooth', 
+                                    block: 'nearest' 
+                                });
+                            }
+                        }
+                    }
+                }, 100); // Small delay to ensure sidebar is fully opened
             }
             
             calculateCaseStatistics(data) {
