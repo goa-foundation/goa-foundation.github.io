@@ -49,30 +49,54 @@
             padding: 20px;
         }
         
-        .main-layout {
+        .main-layout-new {
             display: flex;
             gap: 20px;
+            min-height: 80vh;
+        }
+        
+        .search-and-cases-section {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filters-and-timeline-aside {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .case-list-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
         
         .timeline-section {
             flex: 1;
-            min-width: 0; /* Allows flexbox to shrink */
+            min-width: 0;
         }
         
         .sidebar {
-            width: 400px;
+            width: 100%;
             background: var(--gf-white);
             border-radius: 12px;
             box-shadow: 0 8px 24px var(--gf-shadow);
             border: 2px solid var(--gf-border);
             overflow: hidden;
             transition: all 0.3s ease, max-height 0.3s ease;
+            flex: 1;
         }
         
         .sidebar.collapsed {
-            width: 0;
             opacity: 0;
             pointer-events: none;
+            max-height: 0;
+            overflow: hidden;
         }
         
         .sidebar-header {
@@ -264,17 +288,23 @@
         }
         
         @media (max-width: 1024px) {
-            .main-layout {
+            .main-layout-new {
                 flex-direction: column;
             }
             
+            .search-and-cases-section {
+                order: 2;
+            }
+            
+            .filters-and-timeline-aside {
+                order: 1;
+            }
+            
             .sidebar {
-                width: 100%;
                 max-height: 400px;
             }
             
             .sidebar.collapsed {
-                width: 100%;
                 opacity: 1;
                 pointer-events: auto;
                 max-height: 0;
@@ -480,7 +510,7 @@
                 padding: 10px !important;
             }
             
-            .main-layout {
+            .main-layout-new {
                 gap: 15px;
             }
         }
@@ -591,44 +621,6 @@
         </div>
     </header>
 
-    <!-- Search Input -->
-    <div class="timeline-container py-4">
-        <div class="relative">
-            <input 
-                id="autoComplete" 
-                type="text" 
-                placeholder="Search cases. Eg. 'pollution' or 'PIL No. 2526/2021'" 
-                class="w-full text-xl px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200"
-                style="border-color: var(--gf-border); background-color: var(--gf-white); color: var(--gf-text-dark); font-family: 'Source Sans Pro', sans-serif;"
-            />
-            <button 
-                id="clear-search" 
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200 hidden"
-                style="color: var(--gf-text-light);"
-            >
-                ✕
-            </button>
-        </div>
-    </div>
-
-    <!-- Statistics -->
-    <div id="stats" class="timeline-container hidden">
-        <blockquote class="text-center italic mb-3 text-base" style="color: var(--gf-text-dark);">
-            "The intergenerational equity principle asks us to ensure our children and future generations inherit at least as much as we did."
-        </blockquote>
-        <div class="text-center text-sm" style="color: var(--gf-text-light);">
-            Explore <u><span id="total-cases">-</span></u> Cases over  <u><span id="year-span">-</span></u>.
-        </div>
-        
-        <!-- Filters -->
-        <div class="filters">
-            <label class="text-sm font-medium text-gray-700"></label>
-            <div id="tag-filters" class="tag-filters-container">
-                <!-- Tag filter buttons will be dynamically generated here -->
-            </div>
-        </div>
-    </div>
-
     <!-- Main Content -->
     <main class="timeline-container">
         <!-- Loading indicator -->
@@ -643,42 +635,86 @@
             <p class="text-red-600" id="error-message"></p>
         </div>
         
-        <!-- Timeline content -->
-        <div id="timeline-content" class="hidden">
-            <!-- Main layout with timeline and sidebar -->
-            <div class="main-layout">
-                <!-- Timeline section -->
-                <div class="timeline-section">
+        <!-- Main layout with two 50% width sections -->
+        <div id="timeline-content" class="hidden main-layout-new">
+            <!-- Section 1: Search and Case List -->
+            <section class="search-and-cases-section">
+                <!-- Search Input -->
+                <div class="py-4">
+                    <div class="relative">
+                        <input 
+                            id="autoComplete" 
+                            type="text" 
+                            placeholder="Search cases. Eg. 'pollution' or 'PIL No. 2526/2021'" 
+                            class="w-full text-xl px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200"
+                            style="border-color: var(--gf-border); background-color: var(--gf-white); color: var(--gf-text-dark); font-family: 'Source Sans Pro', sans-serif;"
+                        />
+                        <button 
+                            id="clear-search" 
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200 hidden"
+                            style="color: var(--gf-text-light);"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Case List -->
+                <div class="case-list-container">
+                    <div class="sidebar collapsed" id="case-sidebar">
+                        <div class="sidebar-header">
+                            <button class="sidebar-close" id="sidebar-close" title="Close">×</button>
+                            <h3 class="sidebar-title" id="sidebar-title">All Cases</h3>
+                            <p class="sidebar-subtitle" id="sidebar-subtitle">Loading cases...</p>
+                            <div class="sidebar-sort-controls" id="sidebar-sort-controls" style="display: none;">
+                                <div class="sidebar-sort-option active" id="sort-oldest-first">
+                                    <div class="sidebar-sort-radio">×</div>
+                                    <span>Oldest</span>
+                                </div>
+                                <div class="sidebar-sort-option" id="sort-newest-first">
+                                    <div class="sidebar-sort-radio"></div>
+                                    <span>Latest</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="sidebar-content" id="sidebar-content">
+                            <div class="sidebar-empty">
+                                <div class="icon">📊</div>
+                                <p>Click on a timeline bar to view detailed case information</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 2: Aside with Filters and Timeline -->
+            <aside class="filters-and-timeline-aside">
+                <!-- Statistics and Filters Section -->
+                <section id="stats" class="hidden">
+                    <!-- Filters -->
+                    <div class="filters">
+                        <label class="text-sm font-medium text-gray-700"></label>
+                        <div id="tag-filters" class="tag-filters-container">
+                            <!-- Tag filter buttons will be dynamically generated here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Blockquote and Stats -->
+                    <blockquote class="text-center italic mb-3 text-base" style="color: var(--gf-text-dark);">
+                        "The intergenerational equity principle asks us to ensure our children and future generations inherit at least as much as we did."
+                    </blockquote>
+                    <div id="stats-text" class="text-center text-sm" style="color: var(--gf-text-light);">
+                        Explore <u><span id="total-cases">-</span></u> Cases over  <u><span id="year-span">-</span></u>.
+                    </div>
+                </section>
+                
+                <!-- Timeline Section -->
+                <section class="timeline-section">
                     <!-- Timeline visualization -->
                     <div id="timeline" class="rounded-lg shadow-lg border-2 p-2" 
                          style="background-color: var(--gf-white); border-color: var(--gf-border);"></div>
-                </div>
-                
-                <!-- Sidebar -->
-                <div class="sidebar collapsed" id="case-sidebar">
-                    <div class="sidebar-header">
-                        <button class="sidebar-close" id="sidebar-close" title="Close">×</button>
-                        <h3 class="sidebar-title" id="sidebar-title">All Legal Cases</h3>
-                        <p class="sidebar-subtitle" id="sidebar-subtitle">Loading cases...</p>
-                        <div class="sidebar-sort-controls" id="sidebar-sort-controls" style="display: none;">
-                            <div class="sidebar-sort-option active" id="sort-oldest-first">
-                                <div class="sidebar-sort-radio">×</div>
-                                <span>Oldest</span>
-                            </div>
-                            <div class="sidebar-sort-option" id="sort-newest-first">
-                                <div class="sidebar-sort-radio"></div>
-                                <span>Latest</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="sidebar-content" id="sidebar-content">
-                        <div class="sidebar-empty">
-                            <div class="icon">📊</div>
-                            <p>Click on a timeline bar to view detailed case information</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                </section>
+            </aside>
         </div>
     </main>
 
@@ -1483,9 +1519,6 @@
                 
                 // Show sidebar with full details
                 this.showSidebar(data, true);
-                
-                // Scroll to the case list view
-                this.scrollToCaseList();
             }
             
             showSidebar(data, isPermanent = false) {
@@ -1772,47 +1805,7 @@
                 }, 300);
             }
             
-            scrollToCaseList() {
-                // Scroll to the sidebar/case list view
-                const isMobile = window.innerWidth <= 1024;
-                const delay = isMobile ? 300 : 100; // Longer delay for mobile due to max-height animation
-                
-                setTimeout(() => {
-                    const sidebar = document.getElementById('case-sidebar');
-                    if (sidebar && !sidebar.classList.contains('collapsed')) {
-                        if (isMobile) {
-                            // On mobile, scroll to sidebar directly with more aggressive settings
-                            sidebar.scrollIntoView({ 
-                                behavior: 'smooth', 
-                                block: 'start',
-                                inline: 'nearest'
-                            });
-                        } else {
-                            // On desktop, scroll to ensure the sidebar content is visible
-                            const sidebarContent = document.getElementById('sidebar-content');
-                            if (sidebarContent) {
-                                sidebarContent.scrollIntoView({ 
-                                    behavior: 'smooth', 
-                                    block: 'nearest' 
-                                });
-                            }
-                        }
-                    }
-                }, delay);
-            }
             
-            scrollToChart() {
-                // Scroll back to the chart/timeline view
-                setTimeout(() => {
-                    const timeline = document.getElementById('timeline');
-                    if (timeline) {
-                        timeline.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'start' 
-                        });
-                    }
-                }, 100); // Small delay to ensure sidebar is fully collapsed
-            }
             
             calculateCaseStatistics(data) {
                 const totalCases = data.cases.length;
@@ -1965,9 +1958,6 @@
                 
                 // Show all cases again instead of hiding sidebar
                 this.showAllCasesOnLoad();
-                
-                // Scroll back to the chart
-                this.scrollToChart();
             }
             
             updateVisualizationWithFilters() {
@@ -2002,7 +1992,7 @@
                 this.sidebar.classList.remove('collapsed');
                 
                 // Update sidebar header based on active tags
-                let titleText = 'All Legal Cases';
+                let titleText = 'All Cases';
                 if (this.activeTags.size > 0) {
                     const activeTagsArray = Array.from(this.activeTags).sort();
                     if (activeTagsArray.length === 1) {
