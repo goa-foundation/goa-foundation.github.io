@@ -164,8 +164,8 @@
         }
         
         .sidebar-content {
-            height: calc(100vh - 300px);
-            max-height: 600px;
+            height: calc(100vh - 200px);
+            max-height: 800px;
             overflow-y: auto;
             padding: 0;
         }
@@ -281,7 +281,6 @@
         
         .subject-bar {
             cursor: pointer;
-            transition: all 0.3s ease;
         }
         
         .subject-bar:hover {
@@ -290,9 +289,10 @@
         }
         
         .subject-bar.selected {
-            stroke: #1f2937;
-            stroke-width: 3;
-            filter: brightness(1.1);
+            stroke: #1f2937 !important;
+            stroke-width: 3 !important;
+            filter: brightness(1.1) !important;
+            opacity: 0.9 !important;
         }
         
         .tooltip {
@@ -775,13 +775,13 @@
                 
                 if (isMobile) {
                     this.margin = { top: 45, right: 20, bottom: 60, left: 280 };
-                    this.rowHeight = 35;
+                    this.rowHeight = 50;
                 } else if (isTablet) {
                     this.margin = { top: 50, right: 30, bottom: 70, left: 320 };
-                    this.rowHeight = 38;
+                    this.rowHeight = 55;
                 } else {
                     this.margin = { top: 50, right: 50, bottom: 80, left: 380 };
-                    this.rowHeight = 40;
+                    this.rowHeight = 60;
                 }
                 
                 // Recalculate height with new row height
@@ -932,7 +932,7 @@
                 this.yScale = d3.scaleBand()
                     .domain(this.processedData.map(d => d.subject))
                     .range([0, this.height])
-                    .padding(0.1);
+                    .padding(0.2);
             }
             
             createAxes() {
@@ -1071,48 +1071,19 @@
                             line-height: 1.2;
                             padding: 2px 8px 2px 2px;
                             box-sizing: border-box;
-                            transition: all 0.2s ease;
                             word-wrap: break-word;
                             overflow-wrap: break-word;
                             hyphens: auto;
                         ">${d.subject}</div>
                     `)
                     .on('mouseover', (event, d) => {
-                        // Highlight the label on hover by updating the div inside the foreignObject
-                        const foreignObject = d3.select(event.currentTarget);
-                        const div = foreignObject.select('div');
-                        if (!div.empty()) {
-                            div.style('color', '#1f2937')
-                               .style('font-weight', 'bold');
-                        }
-                        // Also show tooltip
-                        this.showTooltip(event, d);
-                        // Highlight the corresponding visual bar
-                        this.g.selectAll('.subject-bar')
-                            .filter(barData => barData === d)
-                            .style('opacity', 0.8)
-                            .style('stroke-width', 2);
+                        this.highlightRow(d, event);
                     })
                     .on('mousemove', (event) => {
                         this.moveTooltip(event);
                     })
                     .on('mouseout', (event, d) => {
-                        // Reset label styling
-                        const foreignObject = d3.select(event.currentTarget);
-                        const div = foreignObject.select('div');
-                        if (!div.empty()) {
-                            div.style('color', '#374151')
-                               .style('font-weight', '500');
-                        }
-                        // Hide tooltip
-                        this.hideTooltip();
-                        // Reset the visual bar highlight only if not selected
-                        if (this.selectedSubject !== d) {
-                            this.g.selectAll('.subject-bar')
-                                .filter(barData => barData === d)
-                                .style('opacity', 1)
-                                .style('stroke-width', 1);
-                        }
+                        this.unhighlightRow(d);
                     })
                     .on('click', (event, d) => {
                         this.selectSubject(d);
@@ -1156,29 +1127,59 @@
                 // Attach events to the click overlays for better interaction
                 this.g.selectAll('.subject-click-overlay')
                     .on('mouseover', (event, d) => {
-                        this.showTooltip(event, d);
-                        // Highlight the corresponding visual bar
-                        this.g.selectAll('.subject-bar')
-                            .filter(barData => barData === d)
-                            .style('opacity', 0.8)
-                            .style('stroke-width', 2);
+                        this.highlightRow(d, event);
                     })
                     .on('mousemove', (event) => {
                         this.moveTooltip(event);
                     })
                     .on('mouseout', (event, d) => {
-                        this.hideTooltip();
-                        // Reset the visual bar highlight only if not selected
-                        if (this.selectedSubject !== d) {
-                            this.g.selectAll('.subject-bar')
-                                .filter(barData => barData === d)
-                                .style('opacity', 1)
-                                .style('stroke-width', 1);
-                        }
+                        this.unhighlightRow(d);
                     })
                     .on('click', (event, d) => {
                         this.selectSubject(d);
                     });
+            }
+            
+            // Unified row highlighting method
+            highlightRow(data, event) {
+                // Show tooltip
+                this.showTooltip(event, data);
+                
+                // Highlight the visual bar
+                this.g.selectAll('.subject-bar')
+                    .filter(barData => barData === data)
+                    .style('opacity', 0.8)
+                    .style('stroke-width', 2);
+                
+                // Highlight the subject label
+                this.g.selectAll('.subject-label')
+                    .filter(labelData => labelData === data)
+                    .select('div')
+                    .style('color', '#1f2937')
+                    .style('font-weight', 'bold');
+            }
+            
+            // Unified row unhighlighting method
+            unhighlightRow(data) {
+                // Hide tooltip
+                this.hideTooltip();
+                
+                // Reset visual bar highlight only if not selected
+                if (this.selectedSubject !== data) {
+                    this.g.selectAll('.subject-bar')
+                        .filter(barData => barData === data)
+                        .style('opacity', 1)
+                        .style('stroke-width', 1);
+                }
+                
+                // Reset subject label styling only if not selected
+                if (this.selectedSubject !== data) {
+                    this.g.selectAll('.subject-label')
+                        .filter(labelData => labelData === data)
+                        .select('div')
+                        .style('color', '#374151')
+                        .style('font-weight', '500');
+                }
             }
             
             showTooltip(event, data) {
@@ -1254,11 +1255,16 @@
                 // Update selected state
                 this.selectedSubject = data;
                 
-                // Update visual selection on bars - keep hover-like effect active
+                // Update visual selection on bars using CSS classes
                 this.g.selectAll('.subject-bar')
-                    .classed('selected', d => d === data)
-                    .style('opacity', d => d === data ? 0.8 : 1)
-                    .style('stroke-width', d => d === data ? 2 : 1);
+                    .classed('selected', d => d === data);
+                
+                // Also highlight the subject label for selected state
+                this.g.selectAll('.subject-label')
+                    .filter(labelData => labelData === data)
+                    .select('div')
+                    .style('color', '#1f2937')
+                    .style('font-weight', 'bold');
                 
                 // Show sidebar with full details
                 this.showSidebar(data, true);
@@ -1351,8 +1357,6 @@
                 // Update bars and maintain selected state
                 this.g.selectAll('.subject-bar')
                     .data(this.processedData)
-                    .transition()
-                    .duration(500)
                     .attr('x', d => this.xScale(d.minYear))
                     .attr('y', d => this.yScale(d.subject))
                     .attr('width', d => {
@@ -1361,22 +1365,11 @@
                         const oneYearWidth = this.xScale(d.minYear + 1) - this.xScale(d.minYear);
                         return Math.max(calculatedWidth, oneYearWidth);
                     })
-                    .end()
-                    .then(() => {
-                        // Restore selected state styling after transition
-                        if (this.selectedSubject) {
-                            this.g.selectAll('.subject-bar')
-                                .classed('selected', d => d === this.selectedSubject)
-                                .style('opacity', d => d === this.selectedSubject ? 0.8 : 1)
-                                .style('stroke-width', d => d === this.selectedSubject ? 2 : 1);
-                        }
-                    });
+                    .classed('selected', d => d === this.selectedSubject);
                 
                 // Update click overlays
                 this.g.selectAll('.subject-click-overlay')
                     .data(this.processedData)
-                    .transition()
-                    .duration(500)
                     .attr('y', d => this.yScale(d.subject))
                     .attr('width', this.width)
                     .attr('height', this.yScale.bandwidth());
@@ -1390,96 +1383,41 @@
                 
                 this.g.selectAll('.subject-label')
                     .data(this.processedData)
-                    .transition()
-                    .duration(500)
                     .attr('y', d => this.yScale(d.subject))
                     .attr('x', -labelWidth)
                     .attr('width', labelWidth)
                     .attr('height', rowHeight)
-                    .end()
-                    .then(() => {
-                        // Update the HTML content after the transition
-                        this.g.selectAll('.subject-label')
-                            .html(d => `
-                                <div style="
-                                    width: 100%;
-                                    height: 100%;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: flex-end;
-                                    font-size: ${labelFontSize};
-                                    font-weight: 500;
-                                    color: #374151;
-                                    text-align: right;
-                                    line-height: 1.2;
-                                    padding: 2px 8px 2px 2px;
-                                    box-sizing: border-box;
-                                    transition: all 0.2s ease;
-                                    word-wrap: break-word;
-                                    overflow-wrap: break-word;
-                                    hyphens: auto;
-                                ">${d.subject}</div>
-                            `);
-                    })
-                    .catch(() => {
-                        // Fallback if transition fails
-                        this.g.selectAll('.subject-label')
-                            .html(d => `
-                                <div style="
-                                    width: 100%;
-                                    height: 100%;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: flex-end;
-                                    font-size: ${labelFontSize};
-                                    font-weight: 500;
-                                    color: #374151;
-                                    text-align: right;
-                                    line-height: 1.2;
-                                    padding: 2px 8px 2px 2px;
-                                    box-sizing: border-box;
-                                    transition: all 0.2s ease;
-                                    word-wrap: break-word;
-                                    overflow-wrap: break-word;
-                                    hyphens: auto;
-                                ">${d.subject}</div>
-                            `);
-                    });
+                    .html(d => `
+                        <div style="
+                            width: 100%;
+                            height: 100%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: flex-end;
+                            font-size: ${labelFontSize};
+                            font-weight: 500;
+                            color: #374151;
+                            text-align: right;
+                            line-height: 1.2;
+                            padding: 2px 8px 2px 2px;
+                            box-sizing: border-box;
+                            word-wrap: break-word;
+                            overflow-wrap: break-word;
+                            hyphens: auto;
+                        ">${d.subject}</div>
+                    `);
                 
                 // Re-attach event handlers to labels after update
                 this.g.selectAll('.subject-label')
                     .style('cursor', 'pointer')
                     .on('mouseover', (event, d) => {
-                        const foreignObject = d3.select(event.currentTarget);
-                        const div = foreignObject.select('div');
-                        if (!div.empty()) {
-                            div.style('color', '#1f2937')
-                               .style('font-weight', 'bold');
-                        }
-                        this.showTooltip(event, d);
-                        this.g.selectAll('.subject-bar')
-                            .filter(barData => barData === d)
-                            .style('opacity', 0.8)
-                            .style('stroke-width', 2);
+                        this.highlightRow(d, event);
                     })
                     .on('mousemove', (event) => {
                         this.moveTooltip(event);
                     })
                     .on('mouseout', (event, d) => {
-                        const foreignObject = d3.select(event.currentTarget);
-                        const div = foreignObject.select('div');
-                        if (!div.empty()) {
-                            div.style('color', '#374151')
-                               .style('font-weight', '500');
-                        }
-                        this.hideTooltip();
-                        // Reset the visual bar highlight only if not selected
-                        if (this.selectedSubject !== d) {
-                            this.g.selectAll('.subject-bar')
-                                .filter(barData => barData === d)
-                                .style('opacity', 1)
-                                .style('stroke-width', 1);
-                        }
+                        this.unhighlightRow(d);
                     })
                     .on('click', (event, d) => {
                         this.selectSubject(d);
@@ -1491,8 +1429,6 @@
                 
                 this.g.selectAll('.case-count')
                     .data(this.processedData)
-                    .transition()
-                    .duration(500)
                     .attr('x', d => {
                         // Calculate bar width with minimum 1 year span
                         const calculatedWidth = this.xScale(d.maxYear) - this.xScale(d.minYear);
@@ -1740,9 +1676,13 @@
             clearSelection() {
                 this.selectedSubject = null;
                 this.g.selectAll('.subject-bar')
-                    .classed('selected', false)
-                    .style('opacity', 1)
-                    .style('stroke-width', 1);
+                    .classed('selected', false);
+                
+                // Reset all subject label styling
+                this.g.selectAll('.subject-label')
+                    .select('div')
+                    .style('color', '#374151')
+                    .style('font-weight', '500');
                 
                 // Show all cases again instead of hiding sidebar
                 this.showAllCasesOnLoad();
