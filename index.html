@@ -49,7 +49,6 @@
         .main-layout {
             display: flex;
             gap: 20px;
-            min-height: 600px;
         }
         
         .timeline-section {
@@ -64,7 +63,7 @@
             box-shadow: 0 8px 24px var(--gf-shadow);
             border: 2px solid var(--gf-border);
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.3s ease, max-height 0.3s ease;
         }
         
         .sidebar.collapsed {
@@ -526,7 +525,7 @@
     </header>
 
     <!-- Statistics -->
-    <div id="stats" class="timeline-container p-4 hidden">
+    <div id="stats" class="timeline-container hidden">
         <blockquote class="text-center italic mb-3 text-base" style="color: var(--gf-text-dark);">
             "The intergenerational equity principle asks us to ensure our children and future generations inherit at least as much as we did."
         </blockquote>
@@ -1554,25 +1553,20 @@
                 }, 300);
             }
             
-            clearSelection() {
-                this.selectedSubject = null;
-                this.g.selectAll('.subject-bar')
-                    .classed('selected', false)
-                    .style('opacity', 1)
-                    .style('stroke-width', 1);
-                this.sidebar.classList.add('collapsed');
-            }
-            
             scrollToCaseList() {
                 // Scroll to the sidebar/case list view
+                const isMobile = window.innerWidth <= 1024;
+                const delay = isMobile ? 300 : 100; // Longer delay for mobile due to max-height animation
+                
                 setTimeout(() => {
                     const sidebar = document.getElementById('case-sidebar');
                     if (sidebar && !sidebar.classList.contains('collapsed')) {
-                        // On mobile, scroll to sidebar directly
-                        if (window.innerWidth <= 1024) {
+                        if (isMobile) {
+                            // On mobile, scroll to sidebar directly with more aggressive settings
                             sidebar.scrollIntoView({ 
                                 behavior: 'smooth', 
-                                block: 'start' 
+                                block: 'start',
+                                inline: 'nearest'
                             });
                         } else {
                             // On desktop, scroll to ensure the sidebar content is visible
@@ -1585,7 +1579,20 @@
                             }
                         }
                     }
-                }, 100); // Small delay to ensure sidebar is fully opened
+                }, delay);
+            }
+            
+            scrollToChart() {
+                // Scroll back to the chart/timeline view
+                setTimeout(() => {
+                    const timeline = document.getElementById('timeline');
+                    if (timeline) {
+                        timeline.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                        });
+                    }
+                }, 100); // Small delay to ensure sidebar is fully collapsed
             }
             
             calculateCaseStatistics(data) {
@@ -1646,17 +1653,6 @@
                 document.getElementById('error-message').textContent = message;
             }
             
-            selectSubject(data) {
-                // Update selected state
-                this.selectedSubject = data;
-                
-                // Update visual selection on bars
-                this.g.selectAll('.subject-bar')
-                    .classed('selected', d => d === data);
-                
-                // Show sidebar with full details (hide sort controls for single subject)
-                this.showSidebar(data, true);
-            }
             
             showSidebar(data, isPermanent = false) {
                 // Show sidebar
@@ -1750,6 +1746,9 @@
                 
                 // Show all cases again instead of hiding sidebar
                 this.showAllCasesOnLoad();
+                
+                // Scroll back to the chart
+                this.scrollToChart();
             }
             
             updateVisualizationWithFilters() {
@@ -1798,8 +1797,21 @@
                 // Show sidebar with all cases
                 this.sidebar.classList.remove('collapsed');
                 
-                // Update sidebar header
-                document.getElementById('sidebar-title').textContent = 'All Legal Cases';
+                // Update sidebar header based on active tags
+                let titleText = 'All Legal Cases';
+                if (this.activeTags.size > 0) {
+                    const activeTagsArray = Array.from(this.activeTags).sort();
+                    if (activeTagsArray.length === 1) {
+                        titleText = `Cases involving ${activeTagsArray[0]}`;
+                    } else if (activeTagsArray.length === 2) {
+                        titleText = `Cases involving ${activeTagsArray[0]} and ${activeTagsArray[1]}`;
+                    } else {
+                        const lastTag = activeTagsArray.pop();
+                        titleText = `Cases involving ${activeTagsArray.join(', ')} and ${lastTag}`;
+                    }
+                }
+                
+                document.getElementById('sidebar-title').textContent = titleText;
                 document.getElementById('sidebar-subtitle').textContent = `${allCases.length} cases`;
                 
                 // Show sort controls
