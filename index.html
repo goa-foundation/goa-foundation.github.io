@@ -2,10 +2,18 @@
 <html lang="en">
 
 <head>
-    <title>Goa Foundation Petition Library</title>
+    <title>Goa Foundation Petition Archive</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+    <meta name="description" content="The Goa Foundation Petition Archive is a collection of petitions filed in the Supreme Court of India, High Court of Bombay and the National Green Tribunal for the conservation and protection of Goa’s natural environment.">
+    <meta name="keywords" content="Goa Foundation, Petition Archive, Supreme Court of India, High Court of Bombay, National Green Tribunal, Conservation, Protection, Goa’s natural environment">
+    <meta name="author" content="Goa Foundation">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+    <meta name="google" content="notranslate">
+    <meta name="google-site-verification" content="google-site-verification=google-site-verification">
+    <meta name="google-site-verification" content="google-site-verification">
+    <meta name="google-site-verification" content="google-site-verification">
     <!-- Favicon -->
     <link rel="icon" href="/assets/img/favicon.ico" type="image/x-icon">
     
@@ -246,10 +254,12 @@
             height: 18px;
             fill: currentColor;
             flex-shrink: 0;
+            pointer-events: none;
         }
         
         .filter-icon-button-text {
             white-space: nowrap;
+            pointer-events: none;
         }
         
         .sidebar-sort-controls {
@@ -902,6 +912,7 @@
             overflow-y: auto;
             z-index: 1000;
             font-family: 'Source Sans Pro', sans-serif;
+            display: none !important; /* Hide autocomplete dropdown - sidebar shows filtered results instead */
         }
         
         .autoComplete_result {
@@ -1272,56 +1283,308 @@
                 return false;
             }
             
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
             initializeSearch() {
                 // Prepare search data for autoComplete.js
-                const searchData = this.data.map(item => {
-                    const searchableText = [
-                        item.Subject,
-                        item.Reference,
-                        item.Title,
-                        item.Description,
-                        item.Year,
-                        item.Tags
-                    ].filter(Boolean).join(' ');
-                    
-                    return {
-                        match: searchableText,
-                        value: item.Reference || item.Subject,
-                        data: item
-                    };
+                const searchData = this.data
+                    .map(item => {
+                        // Ensure all values are strings to avoid [object Object] issues
+                        const searchableText = [
+                            item.Subject,
+                            item.Reference,
+                            item.Title,
+                            item.Description,
+                            item.Year,
+                            item.Tags
+                        ]
+                        .filter(Boolean)
+                        .map(val => {
+                            // Convert to string, handling objects, arrays, etc.
+                            if (val === null || val === undefined) return '';
+                            if (typeof val === 'object') {
+                                // Skip objects - they would show as [object Object]
+                                return '';
+                            }
+                            return String(val).trim();
+                        })
+                        .filter(val => val.length > 0 && !val.includes('[object'))
+                        .join(' ');
+                        
+                        const displayValue = String(item.Reference || item.Subject || 'Untitled Case').trim();
+                        
+                        // Only include items with valid searchable text
+                        if (!searchableText || searchableText.length === 0) {
+                            return null;
+                        }
+                        
+                        // Ensure match and value are always strings, never objects
+                        const safeMatch = String(searchableText || '');
+                        const safeValue = String(displayValue || '');
+                        
+                        // Final validation - ensure no [object Object] strings
+                        if (safeMatch.includes('[object') || safeValue.includes('[object')) {
+                            console.warn('⚠️ Found [object in data, skipping item:', { searchableText, displayValue });
+                            return null;
+                        }
+                        
+                        return {
+                            match: safeMatch,
+                            value: safeValue,
+                            data: item
+                        };
+                    })
+                    .filter(item => {
+                        // Double-check filter
+                        if (!item || !item.match || typeof item.match !== 'string') {
+                            return false;
+                        }
+                        if (item.match.includes('[object')) {
+                            return false;
+                        }
+                        return item.match.length > 0;
+                    });
+                
+                // Debug: Log the searchData structure
+                console.log('📊 Search data sample:', searchData.slice(0, 2));
+                console.log('📊 Search data structure check:', {
+                    firstItem: searchData[0],
+                    hasMatch: searchData[0]?.match,
+                    matchType: typeof searchData[0]?.match,
+                    matchIsString: typeof searchData[0]?.match === 'string',
+                    hasValue: searchData[0]?.value,
+                    valueType: typeof searchData[0]?.value,
+                    valueIsString: typeof searchData[0]?.value === 'string'
                 });
                 
+                // Verify all items have string match and value
+                const invalidItems = searchData.filter(item => 
+                    typeof item.match !== 'string' || 
+                    typeof item.value !== 'string' ||
+                    item.match.includes('[object') ||
+                    item.value.includes('[object')
+                );
+                if (invalidItems.length > 0) {
+                    console.error('❌ Found invalid items in searchData:', invalidItems.length, invalidItems.slice(0, 3));
+                }
+                
                 // Initialize autoComplete.js
+                // Store reference to timeline instance for use in content function
+                const timelineInstance = this;
+                
+                // Create a simpler data structure for autoComplete.js
+                // autoComplete.js seems to wrap our data, so we need to ensure match is always accessible
+                const autoCompleteData = searchData.map(item => {
+                    // Ensure we have a clean structure with only strings
+                    const cleanItem = {
+                        match: String(item.match || ''),
+                        value: String(item.value || ''),
+                        // Store the full data separately for later use
+                        _fullData: item.data
+                    };
+                    // Verify it's clean
+                    if (cleanItem.match.includes('[object') || cleanItem.value.includes('[object')) {
+                        console.error('❌ Invalid item in autoCompleteData:', cleanItem);
+                        return null;
+                    }
+                    return cleanItem;
+                }).filter(item => item !== null);
+                
+                console.log('🔧 AutoComplete data sample:', autoCompleteData.slice(0, 2));
+                
                 this.autoCompleteInstance = new autoComplete({
                     selector: "#autoComplete",
                     placeHolder: "Search cases. Eg. 'pollution' or 'PIL No. 2526/2021'",
                     data: {
-                        src: searchData,
+                        src: autoCompleteData,
                         key: ["match"],
                         cache: false
                     },
-                    resultItem: {
-                        highlight: {
-                            render: true
+                    resultsList: {
+                        element: (list, data) => {
+                            // Hide the results list - we don't need autocomplete suggestions
+                            // since the sidebar already shows filtered results
+                            if (list) {
+                                list.style.display = 'none';
+                                list.setAttribute('hidden', '');
+                            }
                         },
+                        noResults: false,
+                        maxResults: 0 // Disable dropdown suggestions
+                    },
+                    resultItem: {
+                        highlight: false, // Disable default highlighting completely
                         content: (data, source) => {
-                            source.innerHTML = `
-                                <div style="display: flex; flex-direction: column; gap: 4px;">
-                                    <div style="font-weight: 600; color: var(--gf-primary);">${data.value}</div>
-                                    <div style="font-size: 12px; color: var(--gf-text-light);">${data.match.substring(0, 100)}${data.match.length > 100 ? '...' : ''}</div>
-                                </div>
-                            `;
+                            console.log('🎯 CONTENT FUNCTION CALLED!', {
+                                data: data,
+                                source: source,
+                                sourceTag: source?.tagName,
+                                dataType: typeof data,
+                                isArray: Array.isArray(data),
+                                hasMatch: data?.match,
+                                matchType: typeof data?.match,
+                                hasValue: data?.value,
+                                valueType: typeof data?.value
+                            });
+                            
+                            // Force clear any existing content first
+                            if (source) {
+                                source.textContent = ''; // Clear first
+                                source.innerHTML = ''; // Double clear
+                            }
+                            
+                            // Handle the case where autoComplete.js wraps our data
+                            let actualData = data;
+                            if (data && typeof data === 'object' && data.value && typeof data.value === 'object') {
+                                // autoComplete.js wrapped our data in value property
+                                actualData = data.value;
+                                console.log('🔄 Unwrapped data from value property:', actualData);
+                            }
+                            
+                            try {
+                                // Use actualData (might be unwrapped)
+                                const item = actualData || data;
+                                
+                                let displayValue = 'Untitled Case';
+                                let matchText = '';
+                                
+                                // Check if item is our expected structure
+                                if (item && typeof item === 'object') {
+                                    // Our structure: { match: string, value: string, _fullData: object }
+                                    if (item.value !== undefined) {
+                                        if (typeof item.value === 'string') {
+                                            displayValue = item.value;
+                                        } else {
+                                            displayValue = String(item.value);
+                                        }
+                                    }
+                                    
+                                    if (item.match !== undefined) {
+                                        if (typeof item.match === 'string') {
+                                            matchText = item.match;
+                                        } else {
+                                            matchText = String(item.match);
+                                        }
+                                    }
+                                    
+                                    // Fallback to _fullData if available
+                                    if ((!displayValue || displayValue === 'Untitled Case' || displayValue.includes('[object')) && item._fullData) {
+                                        const fullData = item._fullData;
+                                        if (fullData && typeof fullData === 'object') {
+                                            if (fullData.Reference) {
+                                                displayValue = String(fullData.Reference);
+                                            } else if (fullData.Subject) {
+                                                displayValue = String(fullData.Subject);
+                                            } else if (fullData.Title) {
+                                                displayValue = String(fullData.Title);
+                                            }
+                                        }
+                                    }
+                                } else if (typeof item === 'string') {
+                                    displayValue = item;
+                                    matchText = item;
+                                }
+                                
+                                // Ensure we have valid strings (never show [object Object])
+                                displayValue = String(displayValue || 'Untitled Case');
+                                matchText = String(matchText || '');
+                                
+                                // Safety check - if somehow we got [object Object], replace it
+                                if (displayValue.includes('[object')) {
+                                    console.warn('⚠️ Found [object in displayValue, replacing');
+                                    displayValue = 'Untitled Case';
+                                }
+                                if (matchText.includes('[object')) {
+                                    console.warn('⚠️ Found [object in matchText, clearing');
+                                    matchText = '';
+                                }
+                                
+                                // Truncate match text for display
+                                const truncatedMatch = matchText.length > 100 ? matchText.substring(0, 100) + '...' : matchText;
+                                
+                                // Get search query for highlighting
+                                const inputElement = document.getElementById('autoComplete');
+                                const query = inputElement ? inputElement.value : '';
+                                
+                                // Create HTML with manual highlighting of search query
+                                let highlightedMatch = truncatedMatch;
+                                if (query && query.length > 0 && truncatedMatch) {
+                                    try {
+                                        const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                                        const regex = new RegExp(`(${escapedQuery})`, 'gi');
+                                        highlightedMatch = truncatedMatch.replace(regex, '<mark style="background-color: var(--gf-primary); color: var(--gf-white); padding: 2px 4px; border-radius: 3px;">$1</mark>');
+                                    } catch (e) {
+                                        // If regex fails, just use plain text
+                                        highlightedMatch = truncatedMatch;
+                                    }
+                                }
+                                
+                                // Escape HTML for the title
+                                const escapedTitle = displayValue
+                                    .replace(/&/g, '&amp;')
+                                    .replace(/</g, '&lt;')
+                                    .replace(/>/g, '&gt;')
+                                    .replace(/"/g, '&quot;')
+                                    .replace(/'/g, '&#039;');
+                                
+                                // Set the HTML content directly
+                                const htmlContent = `
+                                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                                        <div style="font-weight: 600; color: var(--gf-primary);">${escapedTitle}</div>
+                                        <div style="font-size: 12px; color: var(--gf-text-light);">${highlightedMatch}</div>
+                                    </div>
+                                `;
+                                
+                                if (source) {
+                                    source.innerHTML = htmlContent;
+                                    console.log('✅ Content set successfully:', { displayValue, matchText: truncatedMatch.substring(0, 50) });
+                                }
+                            } catch (error) {
+                                // Fallback if anything goes wrong
+                                console.error('❌ Error rendering autocomplete result:', error, data);
+                                if (source) {
+                                    source.innerHTML = `
+                                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                                            <div style="font-weight: 600; color: var(--gf-primary);">Case Result</div>
+                                            <div style="font-size: 12px; color: var(--gf-text-light);">Click to view details</div>
+                                        </div>
+                                    `;
+                                }
+                            }
                         }
                     },
                     events: {
                         input: {
                             selection: (event) => {
-                                const selection = event.detail.selection.value;
-                                this.autoCompleteInstance.input.value = selection;
-                                this.searchQuery = selection;
+                                console.log('🔘 Selection event fired:', event.detail);
+                                // Handle selection - could be object or string
+                                let selectionValue;
+                                if (event.detail && event.detail.selection) {
+                                    // Check if selection is an object with a value property
+                                    if (typeof event.detail.selection === 'object' && event.detail.selection.value) {
+                                        selectionValue = String(event.detail.selection.value);
+                                    } else if (typeof event.detail.selection === 'string') {
+                                        selectionValue = event.detail.selection;
+                                    } else if (typeof event.detail.selection === 'object') {
+                                        // Fallback: try to get value from the object
+                                        selectionValue = event.detail.selection.value || event.detail.selection.match || '';
+                                        selectionValue = String(selectionValue);
+                                    } else {
+                                        selectionValue = String(event.detail.selection || '');
+                                    }
+                                } else {
+                                    selectionValue = '';
+                                }
                                 
-                                // Update URL query parameter
-                                this.updateSearchUrl(selection);
+                                this.autoCompleteInstance.input.value = selectionValue;
+                                this.searchQuery = selectionValue;
+                                
+                                // Update URL query parameter (ensure it's a string)
+                                this.updateSearchUrl(selectionValue);
                                 
                                 // Show clear button
                                 const clearButton = document.getElementById('clear-search');
@@ -1329,10 +1592,63 @@
                                     clearButton.classList.remove('hidden');
                                 }
                                 
-                                this.performSearch(selection);
+                                this.performSearch(selectionValue);
                             },
                             focus: () => {
+                                console.log('👁️ Input focused');
                                 // Show suggestions on focus
+                            },
+                            results: (event) => {
+                                console.log('📝 Results event fired:', event.detail);
+                                
+                                // Fix the match property if it's "[object Object]"
+                                if (event.detail && event.detail.results) {
+                                    event.detail.results.forEach((result, index) => {
+                                        if (result && typeof result.match === 'string' && result.match.includes('[object')) {
+                                            console.warn(`⚠️ Fixing result ${index} with [object Object] match`);
+                                            // Try to get the match from the value object if it exists
+                                            if (result.value && typeof result.value === 'object') {
+                                                if (result.value.match && typeof result.value.match === 'string') {
+                                                    result.match = result.value.match;
+                                                    console.log(`✅ Fixed match from value.match for result ${index}:`, result.match.substring(0, 50));
+                                                } else if (result.value.value && typeof result.value.value === 'string') {
+                                                    result.match = result.value.value;
+                                                    console.log(`✅ Fixed match from value.value for result ${index}:`, result.match.substring(0, 50));
+                                                }
+                                            } else if (result.value && typeof result.value === 'string') {
+                                                // If value is a string, use it as match
+                                                result.match = result.value;
+                                                console.log(`✅ Fixed match from value (string) for result ${index}:`, result.match.substring(0, 50));
+                                            }
+                                        }
+                                    });
+                                    
+                                    // Force re-render by manually updating each list item
+                                    setTimeout(() => {
+                                        const resultsList = document.getElementById('autoComplete_list_1');
+                                        if (resultsList) {
+                                            const items = resultsList.querySelectorAll('li[role="option"]');
+                                            items.forEach((item, index) => {
+                                                const result = event.detail.results[index];
+                                                if (result && item.textContent.includes('[object Object]')) {
+                                                    // Get the content function and re-render
+                                                    const contentFunc = timelineInstance.autoCompleteInstance?.config?.resultItem?.content;
+                                                    if (contentFunc && typeof contentFunc === 'function') {
+                                                        try {
+                                                            // Clear the item first
+                                                            item.innerHTML = '';
+                                                            // Call content function with the fixed result
+                                                            contentFunc(result, item);
+                                                            console.log(`✅ Re-rendered item ${index}`);
+                                                        } catch (e) {
+                                                            console.error('Error calling content function:', e);
+                                                        }
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    }, 10);
+                                }
                             }
                         }
                     }
@@ -1392,9 +1708,12 @@
             updateSearchUrl(query) {
                 const url = new URL(window.location);
                 
-                if (query && query.trim()) {
+                // Ensure query is a string
+                const queryStr = query ? String(query).trim() : '';
+                
+                if (queryStr) {
                     // Update or add the 'q' parameter
-                    url.searchParams.set('q', query.trim());
+                    url.searchParams.set('q', queryStr);
                 } else {
                     // Remove the 'q' parameter if query is empty
                     url.searchParams.delete('q');
@@ -2361,13 +2680,8 @@
                     sidebarClose.classList.remove('hidden');
                     clearFilterButton.classList.remove('hidden');
                     filterIconButton.classList.add('hidden');
-                    // Expand the aside when filters are applied
-                    if (aside) {
-                        aside.classList.remove('collapsed');
-                    }
-                    if (mainLayout) {
-                        mainLayout.classList.remove('filters-collapsed');
-                    }
+                    // Don't automatically expand the aside - only expand when user clicks the filter button
+                    // The aside state should be controlled by toggleFiltersAside() only
                 } else {
                     // Hide close button and clear filter button, show filter icon
                     sidebarClose.classList.add('hidden');
