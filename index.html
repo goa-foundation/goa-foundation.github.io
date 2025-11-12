@@ -27,14 +27,6 @@
     <!-- autoComplete.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"></script>
     
-    <!-- Reveal.js -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.5/dist/reveal.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.5/dist/theme/white.css">
-    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.5/dist/reveal.js"></script>
-    
-    <!-- Goa Foundation Slideshow Plugin -->
-    <script src="./slideshow.js"></script>
-    
     <!-- Spreadsheet Configuration and Processing Module -->
     <script src="./spreadsheet.js"></script>
     
@@ -74,6 +66,18 @@
             min-width: 0;
             display: flex;
             flex-direction: column;
+            transition: flex 0.3s ease;
+        }
+        
+        .main-layout-new.filters-collapsed .search-and-cases-section {
+            flex: 1 1 100%;
+        }
+        
+        /* Fallback using :has() for modern browsers */
+        @supports selector(:has(*)) {
+            .main-layout-new:has(.filters-and-timeline-aside.collapsed) .search-and-cases-section {
+                flex: 1 1 100%;
+            }
         }
         
         .filters-and-timeline-aside {
@@ -82,6 +86,19 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .filters-and-timeline-aside.collapsed {
+            opacity: 0;
+            pointer-events: none;
+            max-height: 0;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            width: 0;
+            min-width: 0;
+            flex: 0 0 0;
         }
         
         .case-list-container {
@@ -135,10 +152,16 @@
             opacity: 0.9;
         }
         
-        .sidebar-close {
+        .sidebar-close-container {
             position: absolute;
             top: 20px;
             right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .sidebar-close {
             background: none;
             border: none;
             color: var(--gf-background);
@@ -148,12 +171,84 @@
             border-radius: 6px;
             transition: all 0.2s;
             opacity: 0.8;
+            line-height: 1;
         }
         
         .sidebar-close:hover {
             background: var(--gf-primary-dark);
             color: var(--gf-white);
             opacity: 1;
+        }
+        
+        .sidebar-close.hidden {
+            display: none;
+        }
+        
+        .clear-filter-button {
+            background: none;
+            border: none;
+            color: var(--gf-background);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 500;
+        }
+        
+        .clear-filter-button:hover {
+            background: var(--gf-primary-dark);
+            color: var(--gf-white);
+            opacity: 1;
+        }
+        
+        .clear-filter-button.hidden {
+            display: none;
+        }
+        
+        .filter-icon-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--gf-background);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+        
+        .filter-icon-button:hover {
+            background: var(--gf-primary-dark);
+            color: var(--gf-white);
+            opacity: 1;
+        }
+        
+        .filter-icon-button.hidden {
+            display: none;
+        }
+        
+        .filter-icon-button svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+        
+        .filter-icon-button-text {
+            white-space: nowrap;
         }
         
         .sidebar-sort-controls {
@@ -215,6 +310,7 @@
             padding: 16px;
             border-bottom: 1px solid #f3f4f6;
             transition: background-color 0.2s;
+            position: relative;
         }
         
         .case-list-item:hover {
@@ -225,11 +321,36 @@
             border-bottom: none;
         }
         
+        /* Accent background for cases with Archive links */
+        .case-list-item.has-archive {
+            background-color: #fef7ed;
+            border-left: 3px solid var(--gf-primary);
+        }
+        
+        .case-list-item.has-archive:hover {
+            background-color: #fef3e2;
+        }
+        
+        /* Year displayed in top right corner */
+        .case-year-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            font-size: 32px;
+            font-weight: 300;
+            color: rgba(162, 111, 27, 0.5);
+            line-height: 1;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
         /* New optimized layout with thumbnail */
         .case-item-content {
             display: flex;
             gap: 16px;
             align-items: flex-start;
+            position: relative;
+            z-index: 1;
         }
         
         .case-thumbnail {
@@ -487,6 +608,12 @@
             .case-description {
                 font-size: 13px;
             }
+            
+            .case-year-badge {
+                font-size: 28px;
+                top: 12px;
+                right: 12px;
+            }
         }
         
         @media (max-width: 640px) {
@@ -518,12 +645,22 @@
                 font-size: 12px;
             }
             
-            .sidebar.collapsed {
-                opacity: 1;
-                pointer-events: auto;
-                max-height: 0;
-                overflow: hidden;
+            .case-year-badge {
+                font-size: 24px;
+                top: 10px;
+                right: 10px;
             }
+            
+            .case-list-item.has-archive {
+                border-left-width: 2px;
+            }
+        }
+        
+        .sidebar.collapsed {
+            opacity: 1;
+            pointer-events: auto;
+            max-height: 0;
+            overflow: hidden;
         }
         
         .subject-bar {
@@ -877,16 +1014,27 @@
                 <div class="case-list-container">
                     <div class="sidebar collapsed" id="case-sidebar">
                         <div class="sidebar-header">
-                            <button class="sidebar-close" id="sidebar-close" title="Close">×</button>
+                            <div class="sidebar-close-container">
+                                <button class="clear-filter-button hidden" id="clear-filter-button" title="Clear all filters">
+                                    <span>Clear Filter</span>
+                                </button>
+                                <button class="sidebar-close hidden" id="sidebar-close" title="Close">×</button>
+                            </div>
+                            <button class="filter-icon-button" id="filter-icon-button" title="Toggle filters">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M3 3a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 5.707A1 1 0 013 5V3z"/>
+                                </svg>
+                                <span class="filter-icon-button-text" id="filter-icon-button-text">Show Case Filter</span>
+                            </button>
                             <h3 class="sidebar-title" id="sidebar-title">All Cases</h3>
                             <p class="sidebar-subtitle" id="sidebar-subtitle">Loading cases...</p>
                             <div class="sidebar-sort-controls" id="sidebar-sort-controls" style="display: none;">
-                                <div class="sidebar-sort-option active" id="sort-oldest-first">
-                                    <div class="sidebar-sort-radio">×</div>
+                                <div class="sidebar-sort-option" id="sort-oldest-first">
+                                    <div class="sidebar-sort-radio"></div>
                                     <span>Oldest</span>
                                 </div>
-                                <div class="sidebar-sort-option" id="sort-newest-first">
-                                    <div class="sidebar-sort-radio"></div>
+                                <div class="sidebar-sort-option active" id="sort-newest-first">
+                                    <div class="sidebar-sort-radio">×</div>
                                     <span>Latest</span>
                                 </div>
                             </div>
@@ -902,7 +1050,7 @@
             </section>
             
             <!-- Section 2: Aside with Filters and Timeline -->
-            <aside class="filters-and-timeline-aside">
+            <aside class="filters-and-timeline-aside collapsed" id="filters-and-timeline-aside">
                 <!-- Statistics and Filters Section -->
                 <section id="stats" class="hidden">
                     <!-- Filters -->
@@ -958,7 +1106,7 @@
                 this.activeTags = new Set();
                 this.allTags = [];
                 this.tagCounts = new Map();
-                this.sidebarSortOrder = 'oldest'; // 'oldest' or 'newest'
+                this.sidebarSortOrder = 'newest'; // 'oldest' or 'newest'
                 this.searchQuery = '';
                 this.autoCompleteInstance = null;
                 
@@ -987,6 +1135,12 @@
                     this.initializeSearch();
                     this.showAllCasesOnLoad();
                     this.showContent();
+                    // Initialize main layout class for collapsed state
+                    const mainLayout = document.querySelector('.main-layout-new');
+                    const aside = document.getElementById('filters-and-timeline-aside');
+                    if (mainLayout && aside && aside.classList.contains('collapsed')) {
+                        mainLayout.classList.add('filters-collapsed');
+                    }
                 } catch (error) {
                     this.showError(error.message);
                 }
@@ -1165,6 +1319,17 @@
                             selection: (event) => {
                                 const selection = event.detail.selection.value;
                                 this.autoCompleteInstance.input.value = selection;
+                                this.searchQuery = selection;
+                                
+                                // Update URL query parameter
+                                this.updateSearchUrl(selection);
+                                
+                                // Show clear button
+                                const clearButton = document.getElementById('clear-search');
+                                if (clearButton) {
+                                    clearButton.classList.remove('hidden');
+                                }
+                                
                                 this.performSearch(selection);
                             },
                             focus: () => {
@@ -1189,6 +1354,9 @@
                         clearButton.classList.add('hidden');
                     }
                     
+                    // Update URL query parameter
+                    this.updateSearchUrl(query);
+                    
                     // Perform search
                     this.performSearch(query);
                 });
@@ -1197,10 +1365,49 @@
                 clearButton.addEventListener('click', () => {
                     this.clearSearch();
                 });
+                
+                // Check for URL query parameter on initialization
+                this.loadSearchFromUrl();
+            }
+            
+            loadSearchFromUrl() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const queryParam = urlParams.get('q');
+                
+                if (queryParam && queryParam.trim()) {
+                    const searchInput = document.getElementById('autoComplete');
+                    const clearButton = document.getElementById('clear-search');
+                    
+                    // Populate the search input
+                    searchInput.value = queryParam.trim();
+                    this.searchQuery = queryParam.trim();
+                    
+                    // Show clear button
+                    clearButton.classList.remove('hidden');
+                    
+                    // Perform the search
+                    this.performSearch(queryParam.trim());
+                }
+            }
+            
+            updateSearchUrl(query) {
+                const url = new URL(window.location);
+                
+                if (query && query.trim()) {
+                    // Update or add the 'q' parameter
+                    url.searchParams.set('q', query.trim());
+                } else {
+                    // Remove the 'q' parameter if query is empty
+                    url.searchParams.delete('q');
+                }
+                
+                // Update URL without page reload
+                window.history.pushState({}, '', url);
             }
             
             performSearch(query) {
                 this.searchQuery = query;
+                this.updateButtonVisibility();
                 this.updateVisualizationWithFilters();
             }
             
@@ -1212,6 +1419,10 @@
                 this.searchQuery = '';
                 clearButton.classList.add('hidden');
                 
+                // Update URL to remove query parameter
+                this.updateSearchUrl('');
+                
+                this.updateButtonVisibility();
                 this.updateVisualizationWithFilters();
             }
             
@@ -1405,6 +1616,7 @@
                     button.classList.add('active');
                 }
                 
+                this.updateButtonVisibility();
                 this.updateVisualizationWithFilters();
             }
             
@@ -1811,6 +2023,7 @@
                 
                 // Get Archive URL for clickable thumbnail and title
                 const archiveUrl = caseItem.Archive && caseItem.Archive.trim() ? caseItem.Archive.trim() : null;
+                const hasArchive = !!archiveUrl;
                 
                 // Create thumbnail
                 const thumbnailHTML = this.createThumbnailHTML(imageData, archiveUrl);
@@ -1824,13 +2037,10 @@
                     ? `<a href="${archiveUrl}" target="_blank" class="case-title-link"><h3 class="case-title">${titleText}</h3></a>`
                     : `<h3 class="case-title">${titleText}</h3>`;
                 
-                // Create metadata with icons
+                // Create metadata with icons (Year removed, now in top right)
                 const metadataItems = [];
                 if (caseItem.Reference) {
                     metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-globe"></i>${caseItem.Reference}</span>`);
-                }
-                if (caseItem.Year) {
-                    metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-calendar"></i>${caseItem.Year}</span>`);
                 }
                 if (tags.length > 0) {
                     metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-tag"></i>${tags.slice(0, 3).join(', ')}${tags.length > 3 ? '...' : ''}</span>`);
@@ -1840,8 +2050,14 @@
                     ? `<div class="case-metadata">${metadataItems.join('<span class="case-metadata-separator">|</span>')}</div>` 
                     : '';
                 
+                // Year badge in top right
+                const yearBadgeHTML = caseItem.Year 
+                    ? `<div class="case-year-badge">${caseItem.Year}</div>` 
+                    : '';
+                
                 return `
-                    <div class="case-list-item">
+                    <div class="case-list-item ${hasArchive ? 'has-archive' : ''}">
+                        ${yearBadgeHTML}
                         <div class="case-item-content">
                             ${thumbnailHTML}
                             <div class="case-content">
@@ -2077,9 +2293,123 @@
                 });
                 
                 // Handle sidebar close button
-                document.getElementById('sidebar-close').addEventListener('click', () => {
-                    this.clearSelection();
+                document.getElementById('sidebar-close').addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    if (this.hasActiveFilters()) {
+                        // If filters are active, clear them
+                        this.clearAllFilters();
+                    } else {
+                        // Otherwise, clear selection (close sidebar)
+                        this.clearSelection();
+                    }
                 });
+                
+                // Handle clear filter button
+                document.getElementById('clear-filter-button').addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    this.clearAllFilters();
+                });
+                
+                // Handle filter icon button
+                document.getElementById('filter-icon-button').addEventListener('click', () => {
+                    this.toggleFiltersAside();
+                });
+                
+                // Initialize button visibility
+                this.updateButtonVisibility();
+            }
+            
+            clearAllFilters() {
+                // Clear all active tag filters
+                this.activeTags.clear();
+                
+                // Clear search query
+                const searchInput = document.getElementById('autoComplete');
+                const clearButton = document.getElementById('clear-search');
+                if (searchInput) {
+                    searchInput.value = '';
+                }
+                if (clearButton) {
+                    clearButton.classList.add('hidden');
+                }
+                this.searchQuery = '';
+                
+                // Remove active class from all tag filter buttons
+                document.querySelectorAll('.tag-filter-button.active').forEach(button => {
+                    button.classList.remove('active');
+                });
+                
+                // Update visualization and button visibility
+                this.updateButtonVisibility();
+                this.updateVisualizationWithFilters();
+            }
+            
+            hasActiveFilters() {
+                return this.activeTags.size > 0 || (this.searchQuery && this.searchQuery.trim().length > 0);
+            }
+            
+            updateButtonVisibility() {
+                const sidebarClose = document.getElementById('sidebar-close');
+                const clearFilterButton = document.getElementById('clear-filter-button');
+                const filterIconButton = document.getElementById('filter-icon-button');
+                const filterButtonText = document.getElementById('filter-icon-button-text');
+                const aside = document.getElementById('filters-and-timeline-aside');
+                const mainLayout = document.querySelector('.main-layout-new');
+                const hasFilters = this.hasActiveFilters();
+                
+                if (hasFilters) {
+                    // Show close button and clear filter button, hide filter icon
+                    sidebarClose.classList.remove('hidden');
+                    clearFilterButton.classList.remove('hidden');
+                    filterIconButton.classList.add('hidden');
+                    // Expand the aside when filters are applied
+                    if (aside) {
+                        aside.classList.remove('collapsed');
+                    }
+                    if (mainLayout) {
+                        mainLayout.classList.remove('filters-collapsed');
+                    }
+                } else {
+                    // Hide close button and clear filter button, show filter icon
+                    sidebarClose.classList.add('hidden');
+                    clearFilterButton.classList.add('hidden');
+                    filterIconButton.classList.remove('hidden');
+                    // Collapse the aside when no filters are applied (default state)
+                    if (aside) {
+                        aside.classList.add('collapsed');
+                        // Update button text when collapsing
+                        if (filterButtonText) {
+                            filterButtonText.textContent = 'Show Case Filter';
+                        }
+                    }
+                    if (mainLayout) {
+                        mainLayout.classList.add('filters-collapsed');
+                    }
+                }
+            }
+            
+            toggleFiltersAside() {
+                const aside = document.getElementById('filters-and-timeline-aside');
+                const filterButtonText = document.getElementById('filter-icon-button-text');
+                const mainLayout = document.querySelector('.main-layout-new');
+                
+                if (aside.classList.contains('collapsed')) {
+                    aside.classList.remove('collapsed');
+                    if (filterButtonText) {
+                        filterButtonText.textContent = 'Hide Case Filter';
+                    }
+                    if (mainLayout) {
+                        mainLayout.classList.remove('filters-collapsed');
+                    }
+                } else {
+                    aside.classList.add('collapsed');
+                    if (filterButtonText) {
+                        filterButtonText.textContent = 'Show Case Filter';
+                    }
+                    if (mainLayout) {
+                        mainLayout.classList.add('filters-collapsed');
+                    }
+                }
             }
             
             handleResize() {
@@ -2423,6 +2753,7 @@
                 
                 // Get Archive URL for clickable thumbnail and title
                 const archiveUrl = caseItem.Archive && caseItem.Archive.trim() ? caseItem.Archive.trim() : null;
+                const hasArchive = !!archiveUrl;
                 
                 // Create thumbnail
                 const thumbnailHTML = this.createThumbnailHTML(imageData, archiveUrl);
@@ -2436,13 +2767,10 @@
                     ? `<a href="${archiveUrl}" target="_blank" class="case-title-link"><h3 class="case-title">${titleText}</h3></a>`
                     : `<h3 class="case-title">${titleText}</h3>`;
                 
-                // Create metadata with icons
+                // Create metadata with icons (Year removed, now in top right)
                 const metadataItems = [];
                 if (caseItem.Reference) {
                     metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-globe"></i>${caseItem.Reference}</span>`);
-                }
-                if (caseItem.Year) {
-                    metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-calendar"></i>${caseItem.Year}</span>`);
                 }
                 if (tags.length > 0) {
                     metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-tag"></i>${tags.slice(0, 3).join(', ')}${tags.length > 3 ? '...' : ''}</span>`);
@@ -2452,8 +2780,14 @@
                     ? `<div class="case-metadata">${metadataItems.join('<span class="case-metadata-separator">|</span>')}</div>` 
                     : '';
                 
+                // Year badge in top right
+                const yearBadgeHTML = caseItem.Year 
+                    ? `<div class="case-year-badge">${caseItem.Year}</div>` 
+                    : '';
+                
                 return `
-                    <div class="case-list-item">
+                    <div class="case-list-item ${hasArchive ? 'has-archive' : ''}">
+                        ${yearBadgeHTML}
                         <div class="case-item-content">
                             ${thumbnailHTML}
                             <div class="case-content">
@@ -2609,6 +2943,7 @@
                 
                 // Get Archive URL for clickable thumbnail and title
                 const archiveUrl = caseItem.Archive && caseItem.Archive.trim() ? caseItem.Archive.trim() : null;
+                const hasArchive = !!archiveUrl;
                 
                 // Create thumbnail
                 const thumbnailHTML = this.createThumbnailHTML(imageData, archiveUrl);
@@ -2622,13 +2957,10 @@
                     ? `<a href="${archiveUrl}" target="_blank" class="case-title-link"><h3 class="case-title">${titleText}</h3></a>`
                     : `<h3 class="case-title">${titleText}</h3>`;
                 
-                // Create metadata with icons
+                // Create metadata with icons (Year removed, now in top right)
                 const metadataItems = [];
                 if (caseItem.Reference) {
                     metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-globe"></i>${caseItem.Reference}</span>`);
-                }
-                if (caseItem.Year) {
-                    metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-calendar"></i>${caseItem.Year}</span>`);
                 }
                 if (tags.length > 0) {
                     metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-tag"></i>${tags.slice(0, 3).join(', ')}${tags.length > 3 ? '...' : ''}</span>`);
@@ -2638,8 +2970,14 @@
                     ? `<div class="case-metadata">${metadataItems.join('<span class="case-metadata-separator">|</span>')}</div>` 
                     : '';
                 
+                // Year badge in top right
+                const yearBadgeHTML = caseItem.Year 
+                    ? `<div class="case-year-badge">${caseItem.Year}</div>` 
+                    : '';
+                
                 return `
-                    <div class="case-list-item">
+                    <div class="case-list-item ${hasArchive ? 'has-archive' : ''}">
+                        ${yearBadgeHTML}
                         <div class="case-item-content">
                             ${thumbnailHTML}
                             <div class="case-content">
@@ -2795,17 +3133,6 @@
         // Initialize timeline when page loads
         document.addEventListener('DOMContentLoaded', () => {
             window.goaFoundationTimeline = new GoaFoundationTimeline();
-            
-            // Initialize slideshow after initial timeout
-            let slideshow = null;
-            setTimeout(() => {
-                slideshow = new GoaFoundationSlideshow({
-                    timeout: 5000, // 10 seconds between slideshow cycles
-                    slideDuration: 5000, // 5 seconds per slide
-                    transitionDuration: 500 // 0.5 seconds fade transition
-                });
-                slideshow.start();
-            }, 10000); // Initial 10 second delay before first slideshow
         });
     </script>
 </body>
