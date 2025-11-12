@@ -1,146 +1,27 @@
 /**
  * Goa Foundation Slideshow Plugin
- * A reveal.js plugin that creates an auto-cycling slideshow overlay
+ * A reveal.js based slideshow overlay with scroll view transitions
  */
 class GoaFoundationSlideshow {
     constructor(options = {}) {
         this.options = {
-            timeout: 10000, // 10 seconds
-            slideDuration: 3000, // 3 seconds per slide
+            timeout: 10000, // 10 seconds between cycles
+            slideDuration: 3000, // 3 seconds per slide (auto-slide timing)
             transitionDuration: 500, // 0.5 seconds transition
             ...options
         };
         
         this.isActive = false;
-        this.currentSlide = 0;
-        this.slides = [];
         this.overlay = null;
-        this.intervalId = null;
+        this.reveal = null;
         this.timeoutId = null;
+        this.autoSlideTimeoutId = null;
         
         this.init();
     }
     
     init() {
-        // Create slides configuration from JSON
-        this.slides = this.createSlidesFromConfig();
-    }
-    
-    createSlidesFromConfig() {
-        const slidesConfig = [
-            {
-                id: 'tiger-reserve',
-                type: 'tiger-reserve',
-                title: 'PIL for a Tiger Reserve in Goa',
-                tags: ['environment', 'wildlife', 'legal'],
-                updates: [
-                    {
-                        datestamp: '2025-09-16',
-                        htmlText: '<p>Supreme Court rules against Goa Government in Tiger Reserve dispute. - <a href="https://www.heraldgoa.in/goa/goa/supreme-court-rules-against-goa-government-in-tiger-reserve-dispute-2/427037">Herald Goa</a></p>'
-                    }
-                ],
-                backgroundImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Bengal_tiger_in_Sanjay_Dubri_Tiger_Reserve_December_2024_by_Tisha_Mukherjee_10.jpg/1599px-Bengal_tiger_in_Sanjay_Dubri_Tiger_Reserve_December_2024_by_Tisha_Mukherjee_10.jpg?20250201075819',
-                backgroundOverlay: 'linear-gradient(135deg, rgba(139, 69, 19, 0.85), rgba(160, 82, 45, 0.85))'
-            },
-            {
-                id: 'quote',
-                type: 'quote',
-                quote: '"<span style="color:white">The intergenerational equity principle asks us to ensure our children and future generations inherit at least as much as we did.</span>"',
-                backgroundImage: 'https://upload.wikimedia.org/wikipedia/commons/6/67/Zuari%2C_Goa_India.jpg',
-                backgroundOverlay: 'linear-gradient(135deg, hsla(0, 15.90%, 67.80%, 0.49), rgba(231, 200, 199, 0.85))'
-            },
-            {
-                id: 'stats',
-                type: 'stats',
-                dynamicContent: true, // This slide gets content from timeline
-                backgroundImage: 'https://upload.wikimedia.org/wikipedia/commons/6/67/Zuari%2C_Goa_India.jpg',
-                backgroundOverlay: 'linear-gradient(135deg, rgba(144, 87, 86, 0.85), rgba(122, 75, 74, 0.85))'
-            }
-        ];
-        
-        return slidesConfig.map(config => ({
-            type: 'content',
-            config: config,
-            content: () => this.createSlideFromConfig(config)
-        }));
-    }
-    
-    createSlideFromConfig(config) {
-        switch (config.type) {
-            case 'story':
-                return this.createStorySlide(config);
-            case 'quote':
-                return this.createQuoteSlide(config);
-            case 'stats':
-                return this.createStatsSlide(config);
-            default:
-                return this.createGenericSlide(config);
-        }
-    }
-    
-    createStorySlide(config) {
-        return `
-            <div class="story-slide" style="background-image: url('${config.backgroundImage}')">
-                <div class="slide-background" style="background: ${config.backgroundOverlay}"></div>
-                <div class="slide-content">
-                    <div class="story-content">
-                        <h2 class="story-title">${config.title}
-                            <button class="view-cases-button" onclick="dispatchCustomEvent('viewCases', { id: '${config.id}' })">View Cases</button>
-                        </h2>
-                        <h3 class="story-subtitle">${config.subtitle}</h3>
-                        ${config.updates.map(update => `<p>${update.htmlText}</p>`).join('')}
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-    
-    createQuoteSlide(config) {
-        return `
-            <div class="quote-slide" style="background-image: url('${config.backgroundImage}')">
-                <div class="slide-background" style="background: ${config.backgroundOverlay}"></div>
-                <div class="slide-content">
-                    <div class="blockquote-content">
-                        <blockquote class="text-center italic mb-3 text-base" style="color: var(--gf-text-dark);">
-                            ${config.quote}
-                        </blockquote>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-    
-    createStatsSlide(config) {
-        // Get statistics from the timeline instance
-        const timeline = window.goaFoundationTimeline;
-        const stats = timeline ? timeline.getStatistics() : { totalCases: 0, yearSpan: 0 };
-        
-        return `
-            <div class="stats-slide" style="background-image: url('${config.backgroundImage}')">
-                <div class="slide-background" style="background: ${config.backgroundOverlay}"></div>
-                <div class="slide-content">
-                    <div class="stats-content">
-                        <div class="text-center text-sm" style="color: var(--gf-text-light);">
-                            Explore <u>${stats.totalCases}</u> Cases over <u>${stats.yearSpan} years</u>.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-    
-    createGenericSlide(config) {
-        // Generic slide template for future extensibility
-        return `
-            <div class="generic-slide" style="background-image: url('${config.backgroundImage || ''}')">
-                <div class="slide-background" style="background: ${config.backgroundOverlay || 'rgba(0,0,0,0.5)'}"></div>
-                <div class="slide-content">
-                    <div class="generic-content">
-                        ${config.content || ''}
-                    </div>
-                </div>
-            </div>
-        `;
+        // Initialize will be called when starting
     }
     
     start() {
@@ -148,8 +29,7 @@ class GoaFoundationSlideshow {
         
         this.isActive = true;
         this.createOverlay();
-        this.showSlide(0);
-        this.startAutoCycle();
+        this.initializeReveal();
     }
     
     stop() {
@@ -166,16 +46,13 @@ class GoaFoundationSlideshow {
             this.overlay.remove();
         }
         
-        // Create overlay container
+        // Create overlay container positioned exactly on top of header
         this.overlay = document.createElement('div');
         this.overlay.className = 'slideshow-overlay';
         this.overlay.innerHTML = `
-            <div class="slideshow-container">
-                <div class="slideshow-slides"></div>
-                <div class="slideshow-controls">
-                    <div class="slideshow-progress">
-                        <div class="slideshow-progress-bar"></div>
-                    </div>
+            <div class="reveal">
+                <div class="slides">
+                    ${this.createSlides()}
                 </div>
             </div>
         `;
@@ -183,11 +60,76 @@ class GoaFoundationSlideshow {
         // Add styles
         this.addStyles();
         
-        // Insert into header
+        // Insert overlay positioned over header
         const header = document.querySelector('header');
         if (header) {
+            header.style.position = 'relative';
             header.appendChild(this.overlay);
         }
+    }
+    
+    createSlides() {
+        const slidesData = this.getSlidesData();
+        
+        return slidesData.map(slide => `
+            <section data-background-image="${slide.backgroundImage}" 
+                     data-background-size="cover" 
+                     data-background-position="center"
+                     data-auto-slide="${this.options.slideDuration}">
+                <div class="slide-overlay" style="background: ${slide.backgroundOverlay}"></div>
+                <div class="slide-content-wrapper">
+                    ${slide.content}
+                </div>
+            </section>
+        `).join('');
+    }
+    
+    getSlidesData() {
+        // Get statistics from timeline instance
+        const timeline = window.goaFoundationTimeline;
+        const stats = timeline ? timeline.getStatistics() : { totalCases: 0, yearSpan: 0 };
+        
+        return [
+            {
+                type: 'tiger-reserve',
+                backgroundImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Bengal_tiger_in_Sanjay_Dubri_Tiger_Reserve_December_2024_by_Tisha_Mukherjee_10.jpg/1599px-Bengal_tiger_in_Sanjay_Dubri_Tiger_Reserve_December_2024_by_Tisha_Mukherjee_10.jpg?20250201075819',
+                backgroundOverlay: 'linear-gradient(135deg, rgba(139, 69, 19, 0.85), rgba(160, 82, 45, 0.85))',
+                content: `
+                    <div class="tiger-reserve-content">
+                        <h2 class="tiger-reserve-title">Tiger Reserve PIL Victory</h2>
+                        <p class="tiger-reserve-update">
+                            Supreme Court rules against Goa Govt - 
+                            <a href="https://www.heraldgoa.in/goa/goa/supreme-court-rules-against-goa-government-in-tiger-reserve-dispute-2/427037" 
+                               target="_blank" class="tiger-reserve-link">Details</a>
+                        </p>
+                    </div>
+                `
+            },
+            {
+                type: 'quote',
+                backgroundImage: 'https://upload.wikimedia.org/wikipedia/commons/6/67/Zuari%2C_Goa_India.jpg',
+                backgroundOverlay: 'linear-gradient(135deg, hsla(0, 15.90%, 67.80%, 0.49), rgba(231, 200, 199, 0.85))',
+                content: `
+                    <div class="quote-content">
+                        <blockquote class="main-quote">
+                            "Ensure our children inherit at least as much as we did."
+                        </blockquote>
+                    </div>
+                `
+            },
+            {
+                type: 'stats',
+                backgroundImage: 'https://upload.wikimedia.org/wikipedia/commons/6/67/Zuari%2C_Goa_India.jpg',
+                backgroundOverlay: 'linear-gradient(135deg, rgba(144, 87, 86, 0.85), rgba(122, 75, 74, 0.85))',
+                content: `
+                    <div class="stats-content">
+                        <div class="stats-text">
+                            Explore <u>${stats.totalCases}</u> Cases over <u>${stats.yearSpan} years</u>.
+                        </div>
+                    </div>
+                `
+            }
+        ];
     }
     
     addStyles() {
@@ -201,69 +143,39 @@ class GoaFoundationSlideshow {
                 top: 0;
                 left: 0;
                 right: 0;
-                bottom: 0;
-                background: linear-gradient(135deg, rgba(144, 87, 86, 0.95), rgba(122, 75, 74, 0.95));
-                backdrop-filter: blur(5px);
+                height: 100%;
                 z-index: 1000;
-                display: flex;
-                align-items: center;
-                justify-content: center;
                 opacity: 0;
                 transition: opacity ${this.options.transitionDuration}ms ease-in-out;
+                pointer-events: none;
+                overflow: hidden;
             }
             
             .slideshow-overlay.active {
                 opacity: 1;
+                pointer-events: auto;
             }
             
-            .slideshow-container {
+            .slideshow-overlay .reveal {
                 width: 100%;
                 height: 100%;
-                position: relative;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
             }
             
-            .slideshow-slides {
-                flex: 1;
-                width: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                position: relative;
-            }
-            
-            .slideshow-slide {
-                position: absolute;
+            .slideshow-overlay .reveal .slides {
                 width: 100%;
                 height: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                opacity: 0;
-                transition: opacity ${this.options.transitionDuration}ms ease-in-out;
             }
             
-            .slideshow-slide.active {
-                opacity: 1;
-            }
-            
-            .quote-slide, .stats-slide, .tiger-reserve-slide, .generic-slide {
+            .slideshow-overlay .reveal .slides section {
                 width: 100%;
                 height: 100%;
-                position: relative;
-                display: flex;
+                display: flex !important;
                 align-items: center;
                 justify-content: center;
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
+                position: relative;
             }
             
-            .quote-slide .slide-background, .stats-slide .slide-background, 
-            .tiger-reserve-slide .slide-background, .generic-slide .slide-background {
+            .slide-overlay {
                 position: absolute;
                 top: 0;
                 left: 0;
@@ -272,192 +184,261 @@ class GoaFoundationSlideshow {
                 z-index: 1;
             }
             
-            .quote-slide .slide-content, .stats-slide .slide-content, 
-            .tiger-reserve-slide .slide-content, .generic-slide .slide-content {
+            .slide-content-wrapper {
                 position: relative;
                 z-index: 2;
-                text-align: center;
                 color: white;
-                max-width: 800px;
-                padding: 40px;
+                padding: 8px 15px;
+                width: 100%;
+                height: 150px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-sizing: border-box;
             }
             
-            .quote-slide .blockquote-content {
-                font-size: 28px;
-                font-style: italic;
-                line-height: 1.6;
-                text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-                font-family: 'Source Sans Pro', sans-serif;
-            }
-            
-            .stats-slide .stats-content {
-                font-size: 24px;
-                font-weight: 600;
-                text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-                font-family: 'Source Sans Pro', sans-serif;
-            }
-            
+            /* Tiger Reserve Slide Styles */
             .tiger-reserve-content {
                 font-family: 'Source Sans Pro', sans-serif;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                width: 100%;
             }
             
             .tiger-reserve-title {
-                font-size: 36px;
+                font-size: 18px;
                 font-weight: 700;
-                margin-bottom: 20px;
-                text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
-                letter-spacing: -0.5px;
-                line-height: 1.2;
+                margin-bottom: 4px;
+                text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+                letter-spacing: -0.2px;
+                line-height: 1.1;
+                color: white;
             }
             
-            .tiger-reserve-subtitle {
-                font-size: 20px;
+            .tiger-reserve-update {
+                font-size: 12px;
                 font-weight: 400;
-                margin-bottom: 30px;
-                text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
-                line-height: 1.4;
+                text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+                line-height: 1.2;
                 opacity: 0.95;
+                color: white;
+                margin: 0;
             }
             
             .tiger-reserve-link {
-                display: inline-block;
-                background: rgba(255, 255, 255, 0.15);
-                color: white;
-                padding: 12px 24px;
-                border-radius: 25px;
-                text-decoration: none;
+                color: rgba(255, 255, 255, 0.9);
+                text-decoration: underline;
                 font-weight: 600;
-                font-size: 16px;
-                border: 2px solid rgba(255, 255, 255, 0.3);
                 transition: all 0.3s ease;
-                text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-                backdrop-filter: blur(10px);
             }
             
             .tiger-reserve-link:hover {
-                background: rgba(255, 255, 255, 0.25);
-                border-color: rgba(255, 255, 255, 0.5);
-                transform: translateY(-2px);
-                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                color: white;
+                text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
             }
             
-            .slideshow-controls {
-                position: absolute;
-                bottom: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 300px;
-            }
-            
-            .slideshow-progress {
+            /* Quote Slide Styles */
+            .quote-content {
+                font-family: 'Source Sans Pro', sans-serif;
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 width: 100%;
-                height: 4px;
-                background: rgba(255, 255, 255, 0.3);
-                border-radius: 2px;
-                overflow: hidden;
+                max-width: 600px;
             }
             
-            .slideshow-progress-bar {
-                height: 100%;
-                background: white;
-                border-radius: 2px;
-                width: 0%;
-                transition: width 100ms linear;
+            .main-quote {
+                font-size: 16px;
+                font-style: italic;
+                line-height: 1.3;
+                text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+                margin: 0;
+                padding: 0;
+                border: none;
+                color: white;
+                text-align: center;
             }
             
+            /* Stats Slide Styles */
+            .stats-content {
+                font-family: 'Source Sans Pro', sans-serif;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+            }
+            
+            .stats-text {
+                font-size: 14px;
+                font-weight: 600;
+                text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+                color: white;
+                text-align: center;
+            }
+            
+            /* Responsive styles for 150px banner height */
             @media (max-width: 768px) {
-                .quote-slide .slide-content, .stats-slide .slide-content, 
-                .tiger-reserve-slide .slide-content, .generic-slide .slide-content {
-                    padding: 20px;
-                }
-                
-                .quote-slide .blockquote-content {
-                    font-size: 22px;
-                }
-                
-                .stats-slide .stats-content {
-                    font-size: 18px;
+                .slide-content-wrapper {
+                    padding: 6px 12px;
+                    height: 150px;
                 }
                 
                 .tiger-reserve-title {
-                    font-size: 28px;
-                }
-                
-                .tiger-reserve-subtitle {
                     font-size: 16px;
+                    margin-bottom: 3px;
                 }
                 
-                .tiger-reserve-link {
+                .tiger-reserve-update {
+                    font-size: 11px;
+                    line-height: 1.1;
+                }
+                
+                .main-quote {
                     font-size: 14px;
-                    padding: 10px 20px;
+                    line-height: 1.2;
                 }
                 
-                .slideshow-controls {
-                    width: 250px;
+                .stats-text {
+                    font-size: 12px;
                 }
             }
             
             @media (max-width: 480px) {
-                .quote-slide .blockquote-content {
-                    font-size: 20px;
-                }
-                
-                .stats-slide .stats-content {
-                    font-size: 16px;
+                .slide-content-wrapper {
+                    padding: 4px 8px;
+                    height: 150px;
                 }
                 
                 .tiger-reserve-title {
-                    font-size: 24px;
-                }
-                
-                .tiger-reserve-subtitle {
                     font-size: 14px;
+                    margin-bottom: 2px;
                 }
                 
-                .tiger-reserve-link {
-                    font-size: 13px;
-                    padding: 8px 16px;
+                .tiger-reserve-update {
+                    font-size: 10px;
+                    line-height: 1.1;
                 }
                 
-                .slideshow-controls {
-                    width: 200px;
+                .main-quote {
+                    font-size: 12px;
+                    line-height: 1.2;
                 }
+                
+                .stats-text {
+                    font-size: 11px;
+                }
+            }
+            
+            /* Hide reveal.js default controls and progress */
+            .slideshow-overlay .reveal .controls {
+                display: none !important;
+            }
+            
+            .slideshow-overlay .reveal .progress {
+                display: none !important;
+            }
+            
+            .slideshow-overlay .reveal .slide-number {
+                display: none !important;
             }
         `;
         
         document.head.appendChild(style);
     }
     
-    showSlide(index) {
-        if (!this.overlay || index < 0 || index >= this.slides.length) return;
-        
-        const slidesContainer = this.overlay.querySelector('.slideshow-slides');
-        if (!slidesContainer) return;
-        
-        // Clear existing slides
-        slidesContainer.innerHTML = '';
-        
-        // Create current slide
-        const slide = document.createElement('div');
-        slide.className = 'slideshow-slide active';
-        slide.innerHTML = this.slides[index].content();
-        
-        slidesContainer.appendChild(slide);
-        
-        this.currentSlide = index;
-        this.updateProgress();
-    }
-    
-    updateProgress() {
-        const progressBar = this.overlay?.querySelector('.slideshow-progress-bar');
-        if (progressBar) {
-            const progress = ((this.currentSlide + 1) / this.slides.length) * 100;
-            progressBar.style.width = `${progress}%`;
+    async initializeReveal() {
+        if (!window.Reveal) {
+            console.error('Reveal.js not loaded');
+            return;
         }
-    }
-    
-    startAutoCycle() {
-        this.clearTimers();
+        
+        // Get header dimensions for proper sizing (constrained to 150px height)
+        const header = document.querySelector('header');
+        const headerRect = header ? header.getBoundingClientRect() : { width: 800, height: 150 };
+        // Ensure height is exactly 150px for banner consistency
+        headerRect.height = 150;
+        
+        // Initialize reveal.js with scroll view
+        this.reveal = new Reveal(this.overlay.querySelector('.reveal'), {
+            // Scroll view configuration
+            view: 'scroll',
+            scrollProgress: false,
+            scrollSnap: 'mandatory',
+            scrollLayout: 'compact', // Use compact layout for banner style
+            
+            // Auto-slide configuration
+            autoSlide: this.options.slideDuration,
+            autoSlideStoppable: false,
+            autoSlideMethod: 'next', // Ensure it moves to next slide
+            
+            // Disable controls
+            controls: false,
+            progress: false,
+            center: true,
+            touch: false,
+            loop: false,
+            keyboard: false,
+            
+            // Transitions
+            transition: 'fade',
+            transitionSpeed: 'default',
+            
+            // Constrained sizing for header banner
+            width: headerRect.width,
+            height: headerRect.height,
+            margin: 0,
+            minScale: 1,
+            maxScale: 1,
+            
+            // Ensure slides are properly sized for banner
+            disableLayout: false,
+            embedded: true // Treat as embedded presentation
+        });
+        
+        await this.reveal.initialize({
+  view: 'scroll',
+
+  // Force the scrollbar to remain visible
+  scrollProgress: true,
+  scrollSnap: 'mandatory',
+  scrollLayout: 'compact',
+  scrollSnap: 'mandatory',
+  autoSlide: 5000,
+  loop: true,
+});
+        
+        // Listen for auto-slide events to detect when we reach the last slide
+        this.reveal.on('autoslideresumed', () => {
+            // Auto-slide has resumed
+        });
+        
+        this.reveal.on('autoslidepaused', () => {
+            // Check if we're on the last slide when auto-slide pauses (which happens at the end)
+            const currentSlide = this.reveal.getIndices().h;
+            const totalSlides = this.reveal.getTotalSlides();
+            
+            if (currentSlide === totalSlides - 1) {
+                // We're on the last slide and auto-slide has paused, complete the slideshow
+                this.autoSlideTimeoutId = setTimeout(() => {
+                    this.completeSlideshow();
+                }, this.options.slideDuration);
+            }
+        });
+        
+        // Also listen for slide changes as backup
+        this.reveal.on('slidechanged', (event) => {
+            const isLastSlide = event.indexh === this.reveal.getTotalSlides() - 1;
+            
+            if (isLastSlide) {
+                // Schedule auto-hide after the last slide duration
+                this.autoSlideTimeoutId = setTimeout(() => {
+                    this.completeSlideshow();
+                }, this.options.slideDuration);
+            }
+        });
         
         // Show overlay with fade in
         setTimeout(() => {
@@ -465,24 +446,14 @@ class GoaFoundationSlideshow {
                 this.overlay.classList.add('active');
             }
         }, 100);
-        
-        // Start cycling through slides
-        this.intervalId = setInterval(() => {
-            this.nextSlide();
-        }, this.options.slideDuration);
     }
     
-    nextSlide() {
-        if (!this.isActive) return;
+    completeSlideshow() {
+        // Stop the slideshow and hide overlay
+        this.stop();
         
-        const nextIndex = (this.currentSlide + 1) % this.slides.length;
-        this.showSlide(nextIndex);
-        
-        // If we've completed all slides, stop and hide
-        if (nextIndex === 0) {
-            this.stop();
-            this.scheduleNext();
-        }
+        // Schedule next cycle
+        this.scheduleNext();
     }
     
     scheduleNext() {
@@ -493,20 +464,26 @@ class GoaFoundationSlideshow {
     }
     
     clearTimers() {
-        if (this.intervalId) {
-            clearInterval(this.intervalId);
-            this.intervalId = null;
-        }
-        
         if (this.timeoutId) {
             clearTimeout(this.timeoutId);
             this.timeoutId = null;
+        }
+        
+        if (this.autoSlideTimeoutId) {
+            clearTimeout(this.autoSlideTimeoutId);
+            this.autoSlideTimeoutId = null;
         }
     }
     
     hideOverlay() {
         if (this.overlay) {
             this.overlay.classList.remove('active');
+            
+            // Destroy reveal.js instance
+            if (this.reveal) {
+                this.reveal.destroy();
+                this.reveal = null;
+            }
             
             // Remove overlay after transition
             setTimeout(() => {
@@ -521,11 +498,14 @@ class GoaFoundationSlideshow {
     // Public methods for external control
     pause() {
         this.clearTimers();
+        if (this.reveal) {
+            this.reveal.configure({ autoSlide: 0 });
+        }
     }
     
     resume() {
-        if (this.isActive) {
-            this.startAutoCycle();
+        if (this.isActive && this.reveal) {
+            this.reveal.configure({ autoSlide: this.options.slideDuration });
         }
     }
     

@@ -50,6 +50,27 @@ class GoaFoundationSpreadsheetProcessor {
                     description: 'Detailed description of the case'
                 },
                 
+                // Case title (optional)
+                title: {
+                    aliases: ['Title'],
+                    required: false,
+                    description: 'Title of the case'
+                },
+                
+                // Case image (optional)
+                image: {
+                    aliases: ['Image'],
+                    required: false,
+                    description: 'Image URL with license and attribution information'
+                },
+                
+                // Case timeline (optional)
+                timeline: {
+                    aliases: ['Timeline'],
+                    required: false,
+                    description: 'Timeline of events with dates, descriptions, and optional URLs'
+                },
+                
                 // Tags for categorization (optional)
                 tags: {
                     aliases: ['Tags'],
@@ -490,6 +511,9 @@ class GoaFoundationSpreadsheetProcessor {
             subject: 'Subject',
             year: 'Year',
             description: 'Description',
+            title: 'Title',
+            image: 'Image',
+            timeline: 'Timeline',
             tags: 'Tags',
             archive: 'Archive',
             petition: 'Petition',

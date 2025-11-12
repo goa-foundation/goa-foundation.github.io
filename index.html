@@ -24,6 +24,11 @@
     <!-- autoComplete.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"></script>
     
+    <!-- Reveal.js -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.5/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.5/dist/theme/white.css">
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.5/dist/reveal.js"></script>
+    
     <!-- Goa Foundation Slideshow Plugin -->
     <script src="./slideshow.js"></script>
     
@@ -247,6 +252,100 @@
             font-size: 13px;
             line-height: 1.5;
             margin-bottom: 12px;
+        }
+        
+        .case-image-container {
+            margin: 12px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--gf-border);
+        }
+        
+        .case-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-height: 300px;
+            object-fit: cover;
+        }
+        
+        .case-image-attribution {
+            padding: 8px 12px;
+            background: var(--gf-background);
+            font-size: 10px;
+            color: var(--gf-text-light);
+            border-top: 1px solid var(--gf-border);
+            line-height: 1.4;
+        }
+        
+        .case-image-attribution a {
+            color: var(--gf-primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .case-image-attribution a:hover {
+            text-decoration: underline;
+        }
+        
+        .case-timeline {
+            margin: 12px 0;
+            border-left: 3px solid var(--gf-primary);
+            padding-left: 16px;
+        }
+        
+        .case-timeline-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gf-primary);
+            margin-bottom: 10px;
+        }
+        
+        .case-timeline-item {
+            margin-bottom: 12px;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .case-timeline-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .case-timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 6px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--gf-primary);
+            border: 2px solid var(--gf-white);
+            box-shadow: 0 0 0 2px var(--gf-primary);
+        }
+        
+        .case-timeline-date {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gf-text-dark);
+            margin-bottom: 4px;
+        }
+        
+        .case-timeline-description {
+            font-size: 12px;
+            color: var(--gf-text-light);
+            line-height: 1.5;
+        }
+        
+        .case-timeline-link {
+            color: var(--gf-primary);
+            text-decoration: none;
+            font-weight: 500;
+            word-break: break-word;
+        }
+        
+        .case-timeline-link:hover {
+            text-decoration: underline;
         }
         
         .case-links {
@@ -888,7 +987,7 @@
             searchInItem(item, query) {
                 // Search in all CSV fields
                 const fieldsToSearch = [
-                    'Subject', 'Reference', 'Description', 'Year', 'Tags',
+                    'Subject', 'Reference', 'Title', 'Description', 'Year', 'Tags', 'Image', 'Timeline',
                     'Archive', 'Petition', 'Additional Documents', 'Order'
                 ];
                 
@@ -917,6 +1016,7 @@
                     const searchableText = [
                         item.Subject,
                         item.Reference,
+                        item.Title,
                         item.Description,
                         item.Year,
                         item.Tags
@@ -1596,6 +1696,10 @@
             
             createCaseListItem(caseItem) {
                 const links = this.getCaseLinks(caseItem);
+                const imageData = caseItem.Image ? this.parseImageField(caseItem.Image) : null;
+                const imageHTML = imageData ? this.createImageHTML(imageData) : '';
+                const timelineData = caseItem.Timeline ? this.parseTimelineField(caseItem.Timeline) : null;
+                const timelineHTML = timelineData ? this.createTimelineHTML(timelineData) : '';
                 
                 return `
                     <div class="case-list-item">
@@ -1603,7 +1707,10 @@
                             <div class="case-year">${caseItem.Year}</div>
                             <div class="case-reference">${caseItem.Reference || 'No Reference'}</div>
                         </div>
+                        ${caseItem.Title ? `<div style="font-size: 15px; font-weight: 600; color: var(--gf-primary); margin-top: 6px; margin-bottom: 8px; line-height: 1.4;">${caseItem.Title}</div>` : ''}
+                        ${imageHTML}
                         ${caseItem.Description ? `<div class="case-description">${caseItem.Description}</div>` : ''}
+                        ${timelineHTML}
                         ${links.length > 0 ? `<div class="case-links">${links.join('')}</div>` : ''}
                     </div>
                 `;
@@ -1985,8 +2092,179 @@
                 content.innerHTML = html;
             }
             
+            parseImageField(imageField) {
+                if (!imageField || !imageField.trim()) {
+                    return null;
+                }
+                
+                // Format: 'URL CC-license Attribution'
+                // Example: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Bengal_tiger_in_Sanjay_Dubri_Tiger_Reserve_December_2024_by_Tisha_Mukherjee_10.jpg/330px-Bengal_tiger_in_Sanjay_Dubri_Tiger_Reserve_December_2024_by_Tisha_Mukherjee_10.jpg CC-by-SA Tisha Mukherjee'
+                
+                const parts = imageField.trim().split(/\s+(?=CC-)/);
+                if (parts.length < 2) {
+                    // If no license info, just return the URL
+                    return {
+                        url: imageField.trim(),
+                        license: null,
+                        attribution: null,
+                        sourceUrl: imageField.trim()
+                    };
+                }
+                
+                const url = parts[0].trim();
+                const rest = parts.slice(1).join(' ');
+                
+                // Extract license (starts with CC-)
+                const licenseMatch = rest.match(/^(CC-[^\s]+)/);
+                const license = licenseMatch ? licenseMatch[1] : null;
+                
+                // Attribution is everything after the license
+                const attribution = license ? rest.replace(/^CC-[^\s]+\s*/, '').trim() : rest.trim();
+                
+                // Generate source URL
+                let sourceUrl = url;
+                if (url.includes('upload.wikimedia.org')) {
+                    // Extract filename from Wikimedia Commons URL
+                    // URL format: https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Filename.jpg/330px-Filename.jpg
+                    // Commons page: https://commons.wikimedia.org/wiki/File:Filename.jpg
+                    const filenameMatch = url.match(/\/([^\/]+\.(jpg|jpeg|png|gif|webp))(?:\/|$)/i);
+                    if (filenameMatch) {
+                        const filename = filenameMatch[1];
+                        sourceUrl = `https://commons.wikimedia.org/wiki/File:${filename}`;
+                    }
+                }
+                
+                return {
+                    url: url,
+                    license: license,
+                    attribution: attribution || null,
+                    sourceUrl: sourceUrl
+                };
+            }
+            
+            createImageHTML(imageData) {
+                if (!imageData || !imageData.url) {
+                    return '';
+                }
+                
+                let attributionHTML = '';
+                if (imageData.license || imageData.attribution) {
+                    const attributionParts = [];
+                    if (imageData.license) {
+                        attributionParts.push(imageData.license);
+                    }
+                    if (imageData.attribution) {
+                        attributionParts.push(imageData.attribution);
+                    }
+                    
+                    attributionHTML = `
+                        <div class="case-image-attribution">
+                            ${attributionParts.join(' ')}${imageData.sourceUrl ? ` • <a href="${imageData.sourceUrl}" target="_blank" rel="noopener noreferrer">Source</a>` : ''}
+                        </div>
+                    `;
+                }
+                
+                return `
+                    <div class="case-image-container">
+                        <img src="${imageData.url}" alt="Case image" class="case-image" loading="lazy" />
+                        ${attributionHTML}
+                    </div>
+                `;
+            }
+            
+            parseTimelineField(timelineField) {
+                if (!timelineField || !timelineField.trim()) {
+                    return null;
+                }
+                
+                // Format: Each line is "YYYY-MM-DD Description [optional URL]"
+                // Example:
+                // "2025-11-14 Final Judgement
+                // 2025-09-16 CEC meeting, New Delhi
+                // 2025-09-10 Supreme Court Directs CEC To Examine Mhadei Tiger Reserve Proposal, Status Quo Ordered In Goa https://www.thelawadvice.com/news/..."
+                
+                const lines = timelineField.trim().split(/\n+/).filter(line => line.trim());
+                const timelineItems = [];
+                
+                for (const line of lines) {
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine) continue;
+                    
+                    // Match date pattern: YYYY-MM-DD at the start
+                    const dateMatch = trimmedLine.match(/^(\d{4}-\d{2}-\d{2})\s+(.+)$/);
+                    if (!dateMatch) continue;
+                    
+                    const date = dateMatch[1];
+                    const rest = dateMatch[2].trim();
+                    
+                    // Try to extract URL (starts with http:// or https://)
+                    const urlMatch = rest.match(/\s+(https?:\/\/[^\s]+)$/);
+                    let description = rest;
+                    let url = null;
+                    
+                    if (urlMatch) {
+                        url = urlMatch[1];
+                        description = rest.substring(0, urlMatch.index).trim();
+                    }
+                    
+                    // Format date for display (YYYY-MM-DD -> DD MMM YYYY)
+                    const dateObj = new Date(date + 'T00:00:00');
+                    const formattedDate = dateObj.toLocaleDateString('en-GB', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                    });
+                    
+                    timelineItems.push({
+                        date: date,
+                        formattedDate: formattedDate,
+                        description: description,
+                        url: url
+                    });
+                }
+                
+                // Sort by date (newest first)
+                timelineItems.sort((a, b) => {
+                    return new Date(b.date) - new Date(a.date);
+                });
+                
+                return timelineItems.length > 0 ? timelineItems : null;
+            }
+            
+            createTimelineHTML(timelineItems) {
+                if (!timelineItems || timelineItems.length === 0) {
+                    return '';
+                }
+                
+                let itemsHTML = '';
+                timelineItems.forEach(item => {
+                    let descriptionHTML = item.description;
+                    if (item.url) {
+                        descriptionHTML += ` <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="case-timeline-link">Read more →</a>`;
+                    }
+                    
+                    itemsHTML += `
+                        <div class="case-timeline-item">
+                            <div class="case-timeline-date">${item.formattedDate}</div>
+                            <div class="case-timeline-description">${descriptionHTML}</div>
+                        </div>
+                    `;
+                });
+                
+                return `
+                    <div class="case-timeline">
+                        <div class="case-timeline-title">Timeline</div>
+                        ${itemsHTML}
+                    </div>
+                `;
+            }
+            
             createCaseListItem(caseItem) {
                 const links = this.getCaseLinks(caseItem);
+                const imageData = caseItem.Image ? this.parseImageField(caseItem.Image) : null;
+                const imageHTML = imageData ? this.createImageHTML(imageData) : '';
+                const timelineData = caseItem.Timeline ? this.parseTimelineField(caseItem.Timeline) : null;
+                const timelineHTML = timelineData ? this.createTimelineHTML(timelineData) : '';
                 
                 return `
                     <div class="case-list-item">
@@ -1994,7 +2272,10 @@
                             <div class="case-year">${caseItem.Year}</div>
                             <div class="case-reference">${caseItem.Reference || 'No Reference'}</div>
                         </div>
+                        ${caseItem.Title ? `<div style="font-size: 15px; font-weight: 600; color: var(--gf-primary); margin-top: 6px; margin-bottom: 8px; line-height: 1.4;">${caseItem.Title}</div>` : ''}
+                        ${imageHTML}
                         ${caseItem.Description ? `<div class="case-description">${caseItem.Description}</div>` : ''}
+                        ${timelineHTML}
                         ${links.length > 0 ? `<div class="case-links">${links.join('')}</div>` : ''}
                     </div>
                 `;
@@ -2135,6 +2416,10 @@
             
             createCaseListItemWithSubject(caseItem) {
                 const links = this.getCaseLinks(caseItem);
+                const imageData = caseItem.Image ? this.parseImageField(caseItem.Image) : null;
+                const imageHTML = imageData ? this.createImageHTML(imageData) : '';
+                const timelineData = caseItem.Timeline ? this.parseTimelineField(caseItem.Timeline) : null;
+                const timelineHTML = timelineData ? this.createTimelineHTML(timelineData) : '';
                 
                 return `
                     <div class="case-list-item">
@@ -2145,7 +2430,10 @@
                         <div style="font-size: 12px; color: #6b7280; margin-bottom: 6px; font-weight: 500;">
                             📂 ${caseItem.subject}
                         </div>
+                        ${caseItem.Title ? `<div style="font-size: 15px; font-weight: 600; color: var(--gf-primary); margin-top: 6px; margin-bottom: 8px; line-height: 1.4;">${caseItem.Title}</div>` : ''}
+                        ${imageHTML}
                         ${caseItem.Description ? `<div class="case-description">${caseItem.Description}</div>` : ''}
+                        ${timelineHTML}
                         ${links.length > 0 ? `<div class="case-links">${links.join('')}</div>` : ''}
                     </div>
                 `;
@@ -2290,16 +2578,16 @@
         document.addEventListener('DOMContentLoaded', () => {
             window.goaFoundationTimeline = new GoaFoundationTimeline();
             
-            // Initialize slideshow after 10 seconds
+            // Initialize slideshow after initial timeout
             let slideshow = null;
             setTimeout(() => {
                 slideshow = new GoaFoundationSlideshow({
                     timeout: 5000, // 10 seconds between slideshow cycles
                     slideDuration: 5000, // 5 seconds per slide
-                    transitionDuration: 200 // 0.8 seconds fade transition
+                    transitionDuration: 500 // 0.5 seconds fade transition
                 });
                 slideshow.start();
-            }, 5000);
+            }, 10000); // Initial 10 second delay before first slideshow
         });
     </script>
 </body>
