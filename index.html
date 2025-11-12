@@ -12,6 +12,9 @@
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <!-- Google Fonts - Matching Goa Foundation typography -->
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     
@@ -222,38 +225,96 @@
             border-bottom: none;
         }
         
-        .case-header {
+        /* New optimized layout with thumbnail */
+        .case-item-content {
             display: flex;
-            justify-content: space-between;
+            gap: 16px;
             align-items: flex-start;
-            margin-bottom: 8px;
         }
         
-        .case-year {
-            background: var(--gf-primary);
-            color: var(--gf-white);
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
+        .case-thumbnail {
             flex-shrink: 0;
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f3f4f6;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid var(--gf-border);
         }
         
-        .case-reference {
-            font-weight: 600;
-            color: var(--gf-text-dark);
-            font-size: 14px;
-            margin-left: 8px;
+        .case-thumbnail:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px var(--gf-shadow);
+        }
+        
+        .case-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .case-content {
             flex: 1;
+            min-width: 0;
+        }
+        
+        .case-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gf-primary);
+            line-height: 1.4;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .case-title:hover {
+            color: var(--gf-primary-dark);
+            text-decoration: underline;
+        }
+        
+        .case-title-link {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .case-metadata {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: var(--gf-text-light);
+        }
+        
+        .case-metadata-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .case-metadata-item i {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        .case-metadata-separator {
+            color: #d1d5db;
+            margin: 0 4px;
         }
         
         .case-description {
             color: var(--gf-text-light);
-            font-size: 13px;
-            line-height: 1.5;
+            font-size: 14px;
+            line-height: 1.6;
             margin-bottom: 12px;
         }
         
+        /* Legacy styles for full-width images in timeline/details */
         .case-image-container {
             margin: 12px 0;
             border-radius: 8px;
@@ -407,6 +468,54 @@
             
             .sidebar {
                 max-height: 400px;
+            }
+            
+            .case-thumbnail {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .case-title {
+                font-size: 15px;
+            }
+            
+            .case-metadata {
+                font-size: 12px;
+                gap: 8px;
+            }
+            
+            .case-description {
+                font-size: 13px;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .case-item-content {
+                gap: 12px;
+            }
+            
+            .case-thumbnail {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .case-title {
+                font-size: 14px;
+            }
+            
+            .case-metadata {
+                font-size: 11px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+            
+            .case-metadata-separator {
+                display: none;
+            }
+            
+            .case-description {
+                font-size: 12px;
             }
             
             .sidebar.collapsed {
@@ -1697,21 +1806,52 @@
             createCaseListItem(caseItem) {
                 const links = this.getCaseLinks(caseItem);
                 const imageData = caseItem.Image ? this.parseImageField(caseItem.Image) : null;
-                const imageHTML = imageData ? this.createImageHTML(imageData) : '';
                 const timelineData = caseItem.Timeline ? this.parseTimelineField(caseItem.Timeline) : null;
                 const timelineHTML = timelineData ? this.createTimelineHTML(timelineData) : '';
                 
+                // Get Archive URL for clickable thumbnail and title
+                const archiveUrl = caseItem.Archive && caseItem.Archive.trim() ? caseItem.Archive.trim() : null;
+                
+                // Create thumbnail
+                const thumbnailHTML = this.createThumbnailHTML(imageData, archiveUrl);
+                
+                // Parse tags if available
+                const tags = caseItem.Tags ? caseItem.Tags.split(/[,;]/).map(t => t.trim()).filter(t => t) : [];
+                
+                // Create title with link
+                const titleText = caseItem.Title || caseItem.Subject || 'Untitled Case';
+                const titleHTML = archiveUrl 
+                    ? `<a href="${archiveUrl}" target="_blank" class="case-title-link"><h3 class="case-title">${titleText}</h3></a>`
+                    : `<h3 class="case-title">${titleText}</h3>`;
+                
+                // Create metadata with icons
+                const metadataItems = [];
+                if (caseItem.Reference) {
+                    metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-globe"></i>${caseItem.Reference}</span>`);
+                }
+                if (caseItem.Year) {
+                    metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-calendar"></i>${caseItem.Year}</span>`);
+                }
+                if (tags.length > 0) {
+                    metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-tag"></i>${tags.slice(0, 3).join(', ')}${tags.length > 3 ? '...' : ''}</span>`);
+                }
+                
+                const metadataHTML = metadataItems.length > 0 
+                    ? `<div class="case-metadata">${metadataItems.join('<span class="case-metadata-separator">|</span>')}</div>` 
+                    : '';
+                
                 return `
                     <div class="case-list-item">
-                        <div class="case-header">
-                            <div class="case-year">${caseItem.Year}</div>
-                            <div class="case-reference">${caseItem.Reference || 'No Reference'}</div>
+                        <div class="case-item-content">
+                            ${thumbnailHTML}
+                            <div class="case-content">
+                                ${titleHTML}
+                                ${metadataHTML}
+                                ${caseItem.Description ? `<div class="case-description">${caseItem.Description}</div>` : ''}
+                                ${timelineHTML}
+                                ${links.length > 0 ? `<div class="case-links">${links.join('')}</div>` : ''}
+                            </div>
                         </div>
-                        ${caseItem.Title ? `<div style="font-size: 15px; font-weight: 600; color: var(--gf-primary); margin-top: 6px; margin-bottom: 8px; line-height: 1.4;">${caseItem.Title}</div>` : ''}
-                        ${imageHTML}
-                        ${caseItem.Description ? `<div class="case-description">${caseItem.Description}</div>` : ''}
-                        ${timelineHTML}
-                        ${links.length > 0 ? `<div class="case-links">${links.join('')}</div>` : ''}
                     </div>
                 `;
             }
@@ -2142,6 +2282,22 @@
                 };
             }
             
+            createThumbnailHTML(imageData, archiveUrl) {
+                const imageUrl = imageData && imageData.url 
+                    ? imageData.url 
+                    : 'https://digitallibrary.un.org/img/tind_article_placeholder.png';
+                
+                const onClick = archiveUrl 
+                    ? `onclick="window.open('${archiveUrl}', '_blank')"` 
+                    : '';
+                
+                return `
+                    <div class="case-thumbnail" ${onClick}>
+                        <img src="${imageUrl}" alt="Case thumbnail" loading="lazy" />
+                    </div>
+                `;
+            }
+            
             createImageHTML(imageData) {
                 if (!imageData || !imageData.url) {
                     return '';
@@ -2262,21 +2418,52 @@
             createCaseListItem(caseItem) {
                 const links = this.getCaseLinks(caseItem);
                 const imageData = caseItem.Image ? this.parseImageField(caseItem.Image) : null;
-                const imageHTML = imageData ? this.createImageHTML(imageData) : '';
                 const timelineData = caseItem.Timeline ? this.parseTimelineField(caseItem.Timeline) : null;
                 const timelineHTML = timelineData ? this.createTimelineHTML(timelineData) : '';
                 
+                // Get Archive URL for clickable thumbnail and title
+                const archiveUrl = caseItem.Archive && caseItem.Archive.trim() ? caseItem.Archive.trim() : null;
+                
+                // Create thumbnail
+                const thumbnailHTML = this.createThumbnailHTML(imageData, archiveUrl);
+                
+                // Parse tags if available
+                const tags = caseItem.Tags ? caseItem.Tags.split(/[,;]/).map(t => t.trim()).filter(t => t) : [];
+                
+                // Create title with link
+                const titleText = caseItem.Title || caseItem.Subject || 'Untitled Case';
+                const titleHTML = archiveUrl 
+                    ? `<a href="${archiveUrl}" target="_blank" class="case-title-link"><h3 class="case-title">${titleText}</h3></a>`
+                    : `<h3 class="case-title">${titleText}</h3>`;
+                
+                // Create metadata with icons
+                const metadataItems = [];
+                if (caseItem.Reference) {
+                    metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-globe"></i>${caseItem.Reference}</span>`);
+                }
+                if (caseItem.Year) {
+                    metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-calendar"></i>${caseItem.Year}</span>`);
+                }
+                if (tags.length > 0) {
+                    metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-tag"></i>${tags.slice(0, 3).join(', ')}${tags.length > 3 ? '...' : ''}</span>`);
+                }
+                
+                const metadataHTML = metadataItems.length > 0 
+                    ? `<div class="case-metadata">${metadataItems.join('<span class="case-metadata-separator">|</span>')}</div>` 
+                    : '';
+                
                 return `
                     <div class="case-list-item">
-                        <div class="case-header">
-                            <div class="case-year">${caseItem.Year}</div>
-                            <div class="case-reference">${caseItem.Reference || 'No Reference'}</div>
+                        <div class="case-item-content">
+                            ${thumbnailHTML}
+                            <div class="case-content">
+                                ${titleHTML}
+                                ${metadataHTML}
+                                ${caseItem.Description ? `<div class="case-description">${caseItem.Description}</div>` : ''}
+                                ${timelineHTML}
+                                ${links.length > 0 ? `<div class="case-links">${links.join('')}</div>` : ''}
+                            </div>
                         </div>
-                        ${caseItem.Title ? `<div style="font-size: 15px; font-weight: 600; color: var(--gf-primary); margin-top: 6px; margin-bottom: 8px; line-height: 1.4;">${caseItem.Title}</div>` : ''}
-                        ${imageHTML}
-                        ${caseItem.Description ? `<div class="case-description">${caseItem.Description}</div>` : ''}
-                        ${timelineHTML}
-                        ${links.length > 0 ? `<div class="case-links">${links.join('')}</div>` : ''}
                     </div>
                 `;
             }
@@ -2417,24 +2604,55 @@
             createCaseListItemWithSubject(caseItem) {
                 const links = this.getCaseLinks(caseItem);
                 const imageData = caseItem.Image ? this.parseImageField(caseItem.Image) : null;
-                const imageHTML = imageData ? this.createImageHTML(imageData) : '';
                 const timelineData = caseItem.Timeline ? this.parseTimelineField(caseItem.Timeline) : null;
                 const timelineHTML = timelineData ? this.createTimelineHTML(timelineData) : '';
                 
+                // Get Archive URL for clickable thumbnail and title
+                const archiveUrl = caseItem.Archive && caseItem.Archive.trim() ? caseItem.Archive.trim() : null;
+                
+                // Create thumbnail
+                const thumbnailHTML = this.createThumbnailHTML(imageData, archiveUrl);
+                
+                // Parse tags if available
+                const tags = caseItem.Tags ? caseItem.Tags.split(/[,;]/).map(t => t.trim()).filter(t => t) : [];
+                
+                // Create title with link
+                const titleText = caseItem.Title || caseItem.Subject || 'Untitled Case';
+                const titleHTML = archiveUrl 
+                    ? `<a href="${archiveUrl}" target="_blank" class="case-title-link"><h3 class="case-title">${titleText}</h3></a>`
+                    : `<h3 class="case-title">${titleText}</h3>`;
+                
+                // Create metadata with icons
+                const metadataItems = [];
+                if (caseItem.Reference) {
+                    metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-globe"></i>${caseItem.Reference}</span>`);
+                }
+                if (caseItem.Year) {
+                    metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-calendar"></i>${caseItem.Year}</span>`);
+                }
+                if (tags.length > 0) {
+                    metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-tag"></i>${tags.slice(0, 3).join(', ')}${tags.length > 3 ? '...' : ''}</span>`);
+                }
+                
+                const metadataHTML = metadataItems.length > 0 
+                    ? `<div class="case-metadata">${metadataItems.join('<span class="case-metadata-separator">|</span>')}</div>` 
+                    : '';
+                
                 return `
                     <div class="case-list-item">
-                        <div class="case-header">
-                            <div class="case-year">${caseItem.Year}</div>
-                            <div class="case-reference">${caseItem.Reference || 'No Reference'}</div>
+                        <div class="case-item-content">
+                            ${thumbnailHTML}
+                            <div class="case-content">
+                                <div style="font-size: 12px; color: #6b7280; margin-bottom: 6px; font-weight: 500;">
+                                    <i class="fa fa-folder"></i> ${caseItem.subject}
+                                </div>
+                                ${titleHTML}
+                                ${metadataHTML}
+                                ${caseItem.Description ? `<div class="case-description">${caseItem.Description}</div>` : ''}
+                                ${timelineHTML}
+                                ${links.length > 0 ? `<div class="case-links">${links.join('')}</div>` : ''}
+                            </div>
                         </div>
-                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 6px; font-weight: 500;">
-                            📂 ${caseItem.subject}
-                        </div>
-                        ${caseItem.Title ? `<div style="font-size: 15px; font-weight: 600; color: var(--gf-primary); margin-top: 6px; margin-bottom: 8px; line-height: 1.4;">${caseItem.Title}</div>` : ''}
-                        ${imageHTML}
-                        ${caseItem.Description ? `<div class="case-description">${caseItem.Description}</div>` : ''}
-                        ${timelineHTML}
-                        ${links.length > 0 ? `<div class="case-links">${links.join('')}</div>` : ''}
                     </div>
                 `;
             }
