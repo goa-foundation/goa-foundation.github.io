@@ -1010,7 +1010,7 @@
                                     title="Clear all filters">
                                     <span>Clear Filter</span>
                                 </button>
-                                <button class="sidebar-close hidden" id="sidebar-close" title="Close">×</button>
+                                <button class="sidebar-close" id="sidebar-close" title="Close">×</button>
                             </div>
                             <button class="filter-icon-button" id="filter-icon-button" title="Toggle filters">
                                 <svg viewBox="0 0 20 20" fill="currentColor">
@@ -2511,6 +2511,8 @@
                         // Otherwise, clear selection (close sidebar)
                         this.clearSelection();
                     }
+                    // Scroll to top of page
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
 
                 // Handle clear filter button
