@@ -5,39 +5,40 @@
     <title>Goa Foundation Petition Archive</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="The Goa Foundation Petition Archive is a collection of petitions filed in the Supreme Court of India, High Court of Bombay and the National Green Tribunal for the conservation and protection of Goa’s natural environment.">
-    <meta name="keywords" content="Goa Foundation, Petition Archive, Supreme Court of India, High Court of Bombay, National Green Tribunal, Conservation, Protection, Goa’s natural environment">
+    <meta name="description"
+        content="The Goa Foundation Petition Archive is a collection of petitions filed in the Supreme Court of India, High Court of Bombay and the National Green Tribunal for the conservation and protection of Goa’s natural environment.">
+    <meta name="keywords"
+        content="Goa Foundation, Petition Archive, Supreme Court of India, High Court of Bombay, National Green Tribunal, Conservation, Protection, Goa’s natural environment">
     <meta name="author" content="Goa Foundation">
     <meta name="robots" content="index, follow">
     <meta name="googlebot" content="index, follow">
     <meta name="google" content="notranslate">
-    <meta name="google-site-verification" content="google-site-verification=google-site-verification">
-    <meta name="google-site-verification" content="google-site-verification">
     <meta name="google-site-verification" content="google-site-verification">
     <!-- Favicon -->
     <link rel="icon" href="/assets/img/favicon.ico" type="image/x-icon">
-    
+
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Google Fonts - Matching Goa Foundation typography -->
-    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
+
     <!-- D3.js -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    
+
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    
+
     <!-- autoComplete.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"></script>
-    
+
     <!-- Spreadsheet Configuration and Processing Module -->
     <script src="./spreadsheet.js"></script>
-    
+
     <!-- Custom CSS -->
     <style>
         /* Goa Foundation Theme */
@@ -52,23 +53,23 @@
             --gf-border: #E8DFC7;
             --gf-shadow: rgba(144, 87, 86, 0.1);
         }
-        
+
         * {
             font-family: 'Source Sans Pro', sans-serif;
         }
-        
+
         .timeline-container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
-        
+
         .main-layout-new {
             display: flex;
             gap: 20px;
             min-height: 80vh;
         }
-        
+
         .search-and-cases-section {
             flex: 1;
             min-width: 0;
@@ -76,18 +77,18 @@
             flex-direction: column;
             transition: flex 0.3s ease;
         }
-        
+
         .main-layout-new.filters-collapsed .search-and-cases-section {
             flex: 1 1 100%;
         }
-        
+
         /* Fallback using :has() for modern browsers */
         @supports selector(:has(*)) {
             .main-layout-new:has(.filters-and-timeline-aside.collapsed) .search-and-cases-section {
                 flex: 1 1 100%;
             }
         }
-        
+
         .filters-and-timeline-aside {
             flex: 1;
             min-width: 0;
@@ -96,7 +97,7 @@
             gap: 20px;
             transition: all 0.3s ease;
         }
-        
+
         .filters-and-timeline-aside.collapsed {
             opacity: 0;
             pointer-events: none;
@@ -108,18 +109,18 @@
             min-width: 0;
             flex: 0 0 0;
         }
-        
+
         .case-list-container {
             flex: 1;
             display: flex;
             flex-direction: column;
         }
-        
+
         .timeline-section {
             flex: 1;
             min-width: 0;
         }
-        
+
         .sidebar {
             width: 100%;
             background: var(--gf-white);
@@ -131,14 +132,14 @@
             flex: 0 1 auto;
             min-height: 0;
         }
-        
+
         .sidebar.collapsed {
             opacity: 0;
             pointer-events: none;
             max-height: 0;
             overflow: hidden;
         }
-        
+
         .sidebar-header {
             background: var(--gf-primary);
             color: var(--gf-white);
@@ -146,21 +147,21 @@
             border-bottom: 2px solid var(--gf-primary-dark);
             position: relative;
         }
-        
+
         .sidebar-title {
             font-size: 16px;
             font-weight: bold;
             margin: 0;
             line-height: 1.2;
         }
-        
+
         .sidebar-subtitle {
             font-size: 12px;
             color: var(--gf-background);
             margin: 4px 0 0 0;
             opacity: 0.9;
         }
-        
+
         .sidebar-close-container {
             position: absolute;
             top: 20px;
@@ -169,7 +170,7 @@
             align-items: center;
             gap: 12px;
         }
-        
+
         .sidebar-close {
             background: none;
             border: none;
@@ -182,17 +183,17 @@
             opacity: 0.8;
             line-height: 1;
         }
-        
+
         .sidebar-close:hover {
             background: var(--gf-primary-dark);
             color: var(--gf-white);
             opacity: 1;
         }
-        
+
         .sidebar-close.hidden {
             display: none;
         }
-        
+
         .clear-filter-button {
             background: none;
             border: none;
@@ -208,17 +209,17 @@
             gap: 4px;
             font-weight: 500;
         }
-        
+
         .clear-filter-button:hover {
             background: var(--gf-primary-dark);
             color: var(--gf-white);
             opacity: 1;
         }
-        
+
         .clear-filter-button.hidden {
             display: none;
         }
-        
+
         .filter-icon-button {
             position: absolute;
             top: 20px;
@@ -238,17 +239,17 @@
             gap: 6px;
             font-weight: 500;
         }
-        
+
         .filter-icon-button:hover {
             background: var(--gf-primary-dark);
             color: var(--gf-white);
             opacity: 1;
         }
-        
+
         .filter-icon-button.hidden {
             display: none;
         }
-        
+
         .filter-icon-button svg {
             width: 18px;
             height: 18px;
@@ -256,19 +257,19 @@
             flex-shrink: 0;
             pointer-events: none;
         }
-        
+
         .filter-icon-button-text {
             white-space: nowrap;
             pointer-events: none;
         }
-        
+
         .sidebar-sort-controls {
             display: flex;
             gap: 12px;
             margin-top: 8px;
             align-items: center;
         }
-        
+
         .sidebar-sort-option {
             display: flex;
             align-items: center;
@@ -280,11 +281,11 @@
             transition: all 0.2s;
             white-space: nowrap;
         }
-        
+
         .sidebar-sort-option:hover {
             color: white;
         }
-        
+
         .sidebar-sort-radio {
             width: 12px;
             height: 12px;
@@ -299,47 +300,47 @@
             transition: all 0.2s;
             flex-shrink: 0;
         }
-        
+
         .sidebar-sort-option.active .sidebar-sort-radio {
             background: var(--gf-background);
             border-color: var(--gf-background);
             color: var(--gf-primary);
         }
-        
+
         .sidebar-sort-option.active {
             color: white;
         }
-        
+
         .sidebar-content {
             padding: 0;
             min-height: 0;
         }
-        
+
         .case-list-item {
             padding: 16px;
             border-bottom: 1px solid #f3f4f6;
             transition: background-color 0.2s;
             position: relative;
         }
-        
+
         .case-list-item:hover {
             background-color: #f9fafb;
         }
-        
+
         .case-list-item:last-child {
             border-bottom: none;
         }
-        
+
         /* Accent background for cases with Archive links */
         .case-list-item.has-archive {
             background-color: #fef7ed;
             border-left: 3px solid var(--gf-primary);
         }
-        
+
         .case-list-item.has-archive:hover {
             background-color: #fef3e2;
         }
-        
+
         /* Year displayed in top right corner */
         .case-year-badge {
             position: absolute;
@@ -352,7 +353,7 @@
             z-index: 0;
             pointer-events: none;
         }
-        
+
         /* New optimized layout with thumbnail */
         .case-item-content {
             display: flex;
@@ -361,7 +362,7 @@
             position: relative;
             z-index: 1;
         }
-        
+
         .case-thumbnail {
             flex-shrink: 0;
             width: 120px;
@@ -373,24 +374,24 @@
             transition: transform 0.2s, box-shadow 0.2s;
             border: 1px solid var(--gf-border);
         }
-        
+
         .case-thumbnail:hover {
             transform: scale(1.02);
             box-shadow: 0 4px 12px var(--gf-shadow);
         }
-        
+
         .case-thumbnail img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
         }
-        
+
         .case-content {
             flex: 1;
             min-width: 0;
         }
-        
+
         .case-title {
             font-size: 16px;
             font-weight: 600;
@@ -400,17 +401,17 @@
             cursor: pointer;
             transition: color 0.2s;
         }
-        
+
         .case-title:hover {
             color: var(--gf-primary-dark);
             text-decoration: underline;
         }
-        
+
         .case-title-link {
             text-decoration: none;
             color: inherit;
         }
-        
+
         .case-metadata {
             display: flex;
             flex-wrap: wrap;
@@ -420,88 +421,53 @@
             font-size: 13px;
             color: var(--gf-text-light);
         }
-        
+
         .case-metadata-item {
             display: inline-flex;
             align-items: center;
             gap: 4px;
         }
-        
+
         .case-metadata-item i {
             font-size: 12px;
             opacity: 0.7;
         }
-        
+
         .case-metadata-separator {
             color: #d1d5db;
             margin: 0 4px;
         }
-        
+
         .case-description {
             color: var(--gf-text-light);
             font-size: 14px;
             line-height: 1.6;
             margin-bottom: 12px;
         }
-        
-        /* Legacy styles for full-width images in timeline/details */
-        .case-image-container {
-            margin: 12px 0;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--gf-border);
-        }
-        
-        .case-image {
-            width: 100%;
-            height: auto;
-            display: block;
-            max-height: 300px;
-            object-fit: cover;
-        }
-        
-        .case-image-attribution {
-            padding: 8px 12px;
-            background: var(--gf-background);
-            font-size: 10px;
-            color: var(--gf-text-light);
-            border-top: 1px solid var(--gf-border);
-            line-height: 1.4;
-        }
-        
-        .case-image-attribution a {
-            color: var(--gf-primary);
-            text-decoration: none;
-            font-weight: 600;
-        }
-        
-        .case-image-attribution a:hover {
-            text-decoration: underline;
-        }
-        
+
         .case-timeline {
             margin: 12px 0;
             border-left: 3px solid var(--gf-primary);
             padding-left: 16px;
         }
-        
+
         .case-timeline-title {
             font-size: 13px;
             font-weight: 600;
             color: var(--gf-primary);
             margin-bottom: 10px;
         }
-        
+
         .case-timeline-item {
             margin-bottom: 12px;
             position: relative;
             padding-left: 20px;
         }
-        
+
         .case-timeline-item:last-child {
             margin-bottom: 0;
         }
-        
+
         .case-timeline-item::before {
             content: '';
             position: absolute;
@@ -514,37 +480,37 @@
             border: 2px solid var(--gf-white);
             box-shadow: 0 0 0 2px var(--gf-primary);
         }
-        
+
         .case-timeline-date {
             font-size: 12px;
             font-weight: 600;
             color: var(--gf-text-dark);
             margin-bottom: 4px;
         }
-        
+
         .case-timeline-description {
             font-size: 12px;
             color: var(--gf-text-light);
             line-height: 1.5;
         }
-        
+
         .case-timeline-link {
             color: var(--gf-primary);
             text-decoration: none;
             font-weight: 500;
             word-break: break-word;
         }
-        
+
         .case-timeline-link:hover {
             text-decoration: underline;
         }
-        
+
         .case-links {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
         }
-        
+
         .case-link {
             display: inline-flex;
             align-items: center;
@@ -558,136 +524,151 @@
             transition: all 0.2s;
             border: 1px solid var(--gf-border);
         }
-        
+
         .case-link:hover {
             background: var(--gf-primary);
             color: var(--gf-white);
             transform: translateY(-1px);
             box-shadow: 0 2px 8px var(--gf-shadow);
         }
-        
-        .case-link.archive { background: var(--gf-primary-light); color: var(--gf-white); }
-        .case-link.petition { background: var(--gf-primary); color: var(--gf-white); }
-        .case-link.documents { background: var(--gf-primary-dark); color: var(--gf-white); }
-        .case-link.order { background: var(--gf-text-dark); color: var(--gf-white); }
-        
+
+        .case-link.archive {
+            background: var(--gf-primary-light);
+            color: var(--gf-white);
+        }
+
+        .case-link.petition {
+            background: var(--gf-primary);
+            color: var(--gf-white);
+        }
+
+        .case-link.documents {
+            background: var(--gf-primary-dark);
+            color: var(--gf-white);
+        }
+
+        .case-link.order {
+            background: var(--gf-text-dark);
+            color: var(--gf-white);
+        }
+
         .sidebar-empty {
             padding: 40px 20px;
             text-align: center;
             color: #6b7280;
         }
-        
+
         .sidebar-empty .icon {
             font-size: 48px;
             margin-bottom: 16px;
             opacity: 0.5;
         }
-        
+
         @media (max-width: 1024px) {
             .main-layout-new {
                 flex-direction: column;
             }
-            
+
             .search-and-cases-section {
                 order: 2;
             }
-            
+
             .filters-and-timeline-aside {
                 order: 1;
             }
-            
+
             .sidebar {
                 max-height: 400px;
             }
-            
+
             .case-thumbnail {
                 width: 100px;
                 height: 100px;
             }
-            
+
             .case-title {
                 font-size: 15px;
             }
-            
+
             .case-metadata {
                 font-size: 12px;
                 gap: 8px;
             }
-            
+
             .case-description {
                 font-size: 13px;
             }
-            
+
             .case-year-badge {
                 font-size: 28px;
                 top: 12px;
                 right: 12px;
             }
         }
-        
+
         @media (max-width: 640px) {
             .case-item-content {
                 gap: 12px;
             }
-            
+
             .case-thumbnail {
                 width: 80px;
                 height: 80px;
             }
-            
+
             .case-title {
                 font-size: 14px;
             }
-            
+
             .case-metadata {
                 font-size: 11px;
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 4px;
             }
-            
+
             .case-metadata-separator {
                 display: none;
             }
-            
+
             .case-description {
                 font-size: 12px;
             }
-            
+
             .case-year-badge {
                 font-size: 24px;
                 top: 10px;
                 right: 10px;
             }
-            
+
             .case-list-item.has-archive {
                 border-left-width: 2px;
             }
         }
-        
+
         .sidebar.collapsed {
             opacity: 1;
             pointer-events: auto;
             max-height: 0;
             overflow: hidden;
         }
-        
+
         .subject-bar {
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .subject-bar:hover {
             opacity: 0.8;
             stroke-width: 2;
         }
-        
+
         .subject-bar.selected {
             stroke: #1f2937;
             stroke-width: 3;
             filter: brightness(1.1);
         }
-        
+
         .tooltip {
             position: absolute;
             padding: 20px;
@@ -703,7 +684,7 @@
             border: 2px solid var(--gf-primary-dark);
             font-family: 'Source Sans Pro', sans-serif;
         }
-        
+
         .tooltip h3 {
             margin: 0 0 10px 0;
             font-size: 16px;
@@ -712,38 +693,38 @@
             border-bottom: 2px solid var(--gf-primary-dark);
             padding-bottom: 8px;
         }
-        
+
         .tooltip .case-item {
             margin-bottom: 10px;
             padding-bottom: 10px;
             border-bottom: 1px solid var(--gf-primary-dark);
         }
-        
+
         .tooltip .case-item:last-child {
             border-bottom: none;
             margin-bottom: 0;
         }
-        
+
         .tooltip .year {
             font-weight: bold;
             color: var(--gf-background);
         }
-        
+
         .tooltip .reference {
             color: var(--gf-background);
             font-weight: 600;
         }
-        
+
         .tooltip .description {
             color: var(--gf-white);
             margin: 4px 0;
             opacity: 0.9;
         }
-        
+
         .tooltip .links {
             margin-top: 5px;
         }
-        
+
         .tooltip .links a {
             color: var(--gf-background);
             text-decoration: none;
@@ -751,52 +732,52 @@
             font-size: 11px;
             font-weight: 600;
         }
-        
+
         .tooltip .links a:hover {
             text-decoration: underline;
             opacity: 0.8;
         }
-        
+
         .axis text {
             font-size: 12px;
             fill: var(--gf-text-light);
             font-family: 'Source Sans Pro', sans-serif;
             font-weight: 500;
         }
-        
+
         @media (max-width: 768px) {
             .axis text {
                 font-size: 10px;
             }
         }
-        
+
         @media (max-width: 480px) {
             .axis text {
                 font-size: 9px;
             }
         }
-        
+
         .axis path,
         .axis line {
             fill: none;
             stroke: var(--gf-border);
             shape-rendering: crispEdges;
         }
-        
+
         .subject-label {
             cursor: pointer;
             font-family: 'Source Sans Pro', sans-serif;
         }
-        
+
         .subject-label div {
             transition: all 0.2s ease;
         }
-        
+
         .subject-label:hover div {
             color: var(--gf-primary) !important;
             font-weight: bold !important;
         }
-        
+
         .filters {
             margin-bottom: 20px;
             display: flex;
@@ -804,14 +785,14 @@
             align-items: flex-start;
             flex-wrap: wrap;
         }
-        
+
         .tag-filters-container {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
             justify-content: center;
         }
-        
+
         .tag-filter-button {
             padding: 2px 6px;
             background: var(--gf-white);
@@ -824,80 +805,80 @@
             transition: all 0.2s;
             white-space: nowrap;
         }
-        
+
         .tag-filter-button:hover {
             background: var(--gf-border);
             border-color: var(--gf-primary);
         }
-        
+
         .tag-filter-button.active {
             background: var(--gf-primary);
             color: var(--gf-white);
             border-color: var(--gf-primary);
         }
-        
+
         .tag-filter-button.active:hover {
             background: var(--gf-primary-dark);
             border-color: var(--gf-primary-dark);
         }
-        
-        
-        
+
+
+
         @media (max-width: 768px) {
             .timeline-container {
                 padding: 10px;
             }
-            
+
             .tooltip {
                 max-width: 250px;
                 font-size: 10px;
                 padding: 10px;
             }
-            
+
             .filters {
                 flex-direction: column;
                 align-items: center;
                 gap: 8px;
             }
-            
+
             .tag-filters-container {
                 max-width: 100%;
                 justify-content: center;
             }
-            
+
             #timeline {
                 overflow-x: auto;
                 padding: 10px !important;
             }
-            
+
             .main-layout-new {
                 gap: 15px;
             }
         }
-        
+
         @media (max-width: 480px) {
             .timeline-container {
                 padding: 5px;
             }
-            
+
             .tooltip {
                 max-width: 200px;
                 font-size: 9px;
                 padding: 8px;
             }
-            
+
             #timeline {
                 padding: 5px !important;
             }
         }
-        
+
         /* autoComplete.js styling */
         .autoComplete_wrapper {
             position: relative;
             display: inline-block;
             width: 100%;
         }
-        
+
         .autoComplete_list {
             position: absolute;
             top: 100%;
@@ -912,9 +893,10 @@
             overflow-y: auto;
             z-index: 1000;
             font-family: 'Source Sans Pro', sans-serif;
-            display: none !important; /* Hide autocomplete dropdown - sidebar shows filtered results instead */
+            display: none !important;
+            /* Hide autocomplete dropdown - sidebar shows filtered results instead */
         }
-        
+
         .autoComplete_result {
             padding: 12px 16px;
             border-bottom: 1px solid var(--gf-border);
@@ -923,16 +905,16 @@
             font-size: 14px;
             color: var(--gf-text-dark);
         }
-        
+
         .autoComplete_result:hover,
         .autoComplete_result[aria-selected="true"] {
             background-color: var(--gf-border);
         }
-        
+
         .autoComplete_result:last-child {
             border-bottom: none;
         }
-        
+
         .autoComplete_highlighted {
             background-color: var(--gf-primary);
             color: var(--gf-white);
@@ -940,41 +922,45 @@
             border-radius: 3px;
             font-weight: bold;
         }
-        
+
         .autoComplete_selected {
             background-color: var(--gf-primary);
             color: var(--gf-white);
         }
-        
+
         /* Search input focus styling */
         #autoComplete:focus {
             border-color: var(--gf-primary) !important;
             box-shadow: 0 0 0 3px rgba(144, 87, 86, 0.1) !important;
         }
-        
+
         #clear-search:hover {
             color: var(--gf-primary) !important;
         }
     </style>
 </head>
 
-<body style="background-color: var(--gf-background); color: var(--gf-text-dark);" class="min-h-screen">
+<body style="background-color: white; color: var(--gf-text-dark);" class="min-h-screen">
     <!-- Header -->
-    <header style="color: var(--gf-primary);border-bottom: 4px solid var(--gf-primary); position: relative;" class="p-1 shadow-lg">
+    <header id="main-header"
+        style="color: var(--gf-primary);border-bottom: 4px solid var(--gf-primary); position: relative;"
+        class="p-1 shadow-lg">
         <div class="timeline-container">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-2">
-                    <a href="https://goafoundation.org/" target="_blank"><img src="goa-foundation-logo.png" alt="Goa Foundation Logo" class="h-24 w-24 object-contain"></a>
+                    <a href="https://goafoundation.org/" target="_blank"><img src="goa-foundation-logo.png"
+                            alt="Goa Foundation Logo" class="h-24 w-24 object-contain"></a>
                     <div>
                         <h1 class="text-2xl">Open Archive of Petitions</h1>
-                        <h2 class="text-l">for the conservation and protection of Goa’s natural environment in the Supreme Court of India, High Court of Bombay and the National Green Tribunal</h2>
+                        <h2 class="text-l">for the conservation and protection of Goa's natural environment in the
+                            Supreme Court of India, High Court of Bombay and the National Green Tribunal</h2>
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <a href="https://docs.google.com/spreadsheets/d/14-tOqKm1Wh5sTU32ycJ7GPn65tGsDZDDCviMg3fhe4c/edit?gid=1740040742#gid=1740040742" 
-                       target="_blank" 
-                       style="background-color: var(--gf-primary-dark); border-color: var(--gf-primary-dark);"
-                       class="ml-2 px-1 py-1 hover:opacity-90 rounded-lg text-sm transition-all duration-200 border-2 text-white font-medium">
+                    <a href="https://docs.google.com/spreadsheets/d/14-tOqKm1Wh5sTU32ycJ7GPn65tGsDZDDCviMg3fhe4c/edit?gid=1740040742#gid=1740040742"
+                        target="_blank"
+                        style="background-color: var(--gf-primary-dark); border-color: var(--gf-primary-dark);"
+                        class="ml-2 px-1 py-1 hover:opacity-90 rounded-lg text-sm transition-all duration-200 border-2 text-white font-medium">
                         Edit
                     </a>
                 </div>
@@ -989,13 +975,13 @@
             <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             <p class="mt-4 text-gray-600">Loading case data...</p>
         </div>
-        
+
         <!-- Error message -->
         <div id="error" class="hidden bg-red-50 border border-red-200 rounded-lg p-6 text-center">
             <h2 class="text-lg font-semibold text-red-800 mb-2">Error Loading Data</h2>
             <p class="text-red-600" id="error-message"></p>
         </div>
-        
+
         <!-- Main layout with two 50% width sections -->
         <div id="timeline-content" class="hidden main-layout-new">
             <!-- Section 1: Search and Case List -->
@@ -1003,38 +989,36 @@
                 <!-- Search Input -->
                 <div class="py-4">
                     <div class="relative">
-                        <input 
-                            id="autoComplete" 
-                            type="text" 
-                            placeholder="Search cases. Eg. 'pollution' or 'PIL No. 2526/2021'" 
+                        <input id="autoComplete" type="text"
+                            placeholder="Search cases. Eg. 'pollution' or 'PIL No. 2526/2021'"
                             class="w-full text-xl px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200"
-                            style="border-color: var(--gf-border); background-color: var(--gf-white); color: var(--gf-text-dark); font-family: 'Source Sans Pro', sans-serif;"
-                        />
-                        <button 
-                            id="clear-search" 
+                            style="border-color: var(--gf-border); background-color: var(--gf-white); color: var(--gf-text-dark); font-family: 'Source Sans Pro', sans-serif;" />
+                        <button id="clear-search"
                             class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200 hidden"
-                            style="color: var(--gf-text-light);"
-                        >
+                            style="color: var(--gf-text-light);">
                             ✕
                         </button>
                     </div>
                 </div>
-                
+
                 <!-- Case List -->
                 <div class="case-list-container">
                     <div class="sidebar collapsed" id="case-sidebar">
                         <div class="sidebar-header">
                             <div class="sidebar-close-container">
-                                <button class="clear-filter-button hidden" id="clear-filter-button" title="Clear all filters">
+                                <button class="clear-filter-button hidden" id="clear-filter-button"
+                                    title="Clear all filters">
                                     <span>Clear Filter</span>
                                 </button>
                                 <button class="sidebar-close hidden" id="sidebar-close" title="Close">×</button>
                             </div>
                             <button class="filter-icon-button" id="filter-icon-button" title="Toggle filters">
                                 <svg viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M3 3a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 5.707A1 1 0 013 5V3z"/>
+                                    <path
+                                        d="M3 3a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 5.707A1 1 0 013 5V3z" />
                                 </svg>
-                                <span class="filter-icon-button-text" id="filter-icon-button-text">Show Case Filter</span>
+                                <span class="filter-icon-button-text" id="filter-icon-button-text">Show Case
+                                    Filter</span>
                             </button>
                             <h3 class="sidebar-title" id="sidebar-title">All Cases</h3>
                             <p class="sidebar-subtitle" id="sidebar-subtitle">Loading cases...</p>
@@ -1058,7 +1042,7 @@
                     </div>
                 </div>
             </section>
-            
+
             <!-- Section 2: Aside with Filters and Timeline -->
             <aside class="filters-and-timeline-aside collapsed" id="filters-and-timeline-aside">
                 <!-- Statistics and Filters Section -->
@@ -1070,18 +1054,35 @@
                             <!-- Tag filter buttons will be dynamically generated here -->
                         </div>
                     </div>
-                    
+
                 </section>
-                
+
                 <!-- Timeline Section -->
                 <section class="timeline-section">
                     <!-- Timeline visualization -->
-                    <div id="timeline" class="rounded-lg shadow-lg border-2 p-2" 
-                         style="background-color: var(--gf-white); border-color: var(--gf-border);"></div>
+                    <div id="timeline" class="rounded-lg shadow-lg border-2 p-2"
+                        style="background-color: var(--gf-white); border-color: var(--gf-border);"></div>
                 </section>
             </aside>
         </div>
     </main>
+
+    <!-- Embed Mode Script -->
+    <script>
+        // Check for embed mode in URL parameters
+        (function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isEmbedMode = urlParams.get('embed') === 'true';
+
+            if (isEmbedMode) {
+                // Hide the header
+                const header = document.getElementById('main-header');
+                if (header) {
+                    header.style.display = 'none';
+                }
+            }
+        })();
+    </script>
 
     <!-- Timeline JavaScript -->
     <script>
@@ -1119,7 +1120,7 @@
                 this.sidebarSortOrder = 'newest'; // 'oldest' or 'newest'
                 this.searchQuery = '';
                 this.autoCompleteInstance = null;
-                
+
                 // Initialize spreadsheet processor
                 this.spreadsheetProcessor = new GoaFoundationSpreadsheetProcessor({
                     debug: true, // Enable debug logging
@@ -1129,10 +1130,10 @@
                         validateYears: true
                     }
                 });
-                
+
                 this.init();
             }
-            
+
             async init() {
                 try {
                     await this.loadData();
@@ -1155,18 +1156,18 @@
                     this.showError(error.message);
                 }
             }
-            
+
             async loadData() {
                 try {
                     console.log('Loading data using spreadsheet processor...');
-                    
+
                     // Use the new spreadsheet processor
                     const result = await this.spreadsheetProcessor.loadAndProcessData();
-                    
+
                     // Log the processing summary
                     const summary = this.spreadsheetProcessor.generateSummaryReport(result);
                     console.log(summary);
-                    
+
                     // Check if processing was successful
                     if (!result.success) {
                         // Show errors but don't completely fail if we have some valid data
@@ -1178,41 +1179,41 @@
                             this.showProcessingErrors(result.errors, result.warnings);
                         }
                     }
-                    
+
                     // Filter out invalid records for visualization
                     this.data = result.data.filter(record => record._isValid !== false);
-                    
+
                     console.log(`Successfully loaded ${this.data.length} valid records out of ${result.totalRecords} total records`);
-                    
+
                     if (this.data.length === 0) {
                         throw new Error('No valid data found in the spreadsheet after processing');
                     }
-                    
+
                     // Store processing metadata for potential debugging
                     this.processingResult = result;
-                    
+
                 } catch (error) {
                     console.error('Error loading data:', error);
                     throw error;
                 }
             }
-            
+
             // Helper function to parse tags supporting both comma and semicolon separators
             parseTags(tagsString) {
                 if (!tagsString || !tagsString.trim()) {
                     return [];
                 }
-                
+
                 // Split by both commas and semicolons, then clean up
                 return tagsString
                     .split(/[,;]/)
                     .map(tag => tag.trim())
                     .filter(tag => tag);
             }
-            
+
             extractTags() {
                 const tagCounts = new Map();
-                
+
                 this.data.forEach(item => {
                     if (item.Tags && item.Tags.trim()) {
                         const tags = this.parseTags(item.Tags);
@@ -1221,31 +1222,31 @@
                         });
                     }
                 });
-                
+
                 // Convert to array of objects with tag and count, sorted by tag name
                 this.allTags = Array.from(tagCounts.entries())
                     .map(([tag, count]) => ({ tag, count }))
                     .sort((a, b) => a.tag.localeCompare(b.tag));
-                
+
                 // Also store the tag counts for easy access
                 this.tagCounts = tagCounts;
             }
-            
+
             applyFilters() {
                 let filtered = [...this.data];
-                
+
                 // Apply tag filters
                 if (this.activeTags.size > 0) {
                     filtered = filtered.filter(item => {
                         if (!item.Tags || !item.Tags.trim()) {
                             return false;
                         }
-                        
+
                         const itemTags = this.parseTags(item.Tags);
                         return Array.from(this.activeTags).some(activeTag => itemTags.includes(activeTag));
                     });
                 }
-                
+
                 // Apply search filter
                 if (this.searchQuery && this.searchQuery.trim()) {
                     const query = this.searchQuery.toLowerCase().trim();
@@ -1253,23 +1254,23 @@
                         return this.searchInItem(item, query);
                     });
                 }
-                
+
                 this.filteredData = filtered;
             }
-            
+
             searchInItem(item, query) {
                 // Search in all CSV fields
                 const fieldsToSearch = [
                     'Subject', 'Reference', 'Title', 'Description', 'Year', 'Tags', 'Image', 'Timeline',
                     'Archive', 'Petition', 'Additional Documents', 'Order'
                 ];
-                
+
                 for (const field of fieldsToSearch) {
                     if (item[field] && item[field].toString().toLowerCase().includes(query)) {
                         return true;
                     }
                 }
-                
+
                 // Also search in parsed tags
                 if (item.Tags) {
                     const tags = this.parseTags(item.Tags);
@@ -1279,16 +1280,16 @@
                         }
                     }
                 }
-                
+
                 return false;
             }
-            
+
             escapeHtml(text) {
                 const div = document.createElement('div');
                 div.textContent = text;
                 return div.innerHTML;
             }
-            
+
             initializeSearch() {
                 // Prepare search data for autoComplete.js
                 const searchData = this.data
@@ -1302,36 +1303,36 @@
                             item.Year,
                             item.Tags
                         ]
-                        .filter(Boolean)
-                        .map(val => {
-                            // Convert to string, handling objects, arrays, etc.
-                            if (val === null || val === undefined) return '';
-                            if (typeof val === 'object') {
-                                // Skip objects - they would show as [object Object]
-                                return '';
-                            }
-                            return String(val).trim();
-                        })
-                        .filter(val => val.length > 0 && !val.includes('[object'))
-                        .join(' ');
-                        
+                            .filter(Boolean)
+                            .map(val => {
+                                // Convert to string, handling objects, arrays, etc.
+                                if (val === null || val === undefined) return '';
+                                if (typeof val === 'object') {
+                                    // Skip objects - they would show as [object Object]
+                                    return '';
+                                }
+                                return String(val).trim();
+                            })
+                            .filter(val => val.length > 0 && !val.includes('[object'))
+                            .join(' ');
+
                         const displayValue = String(item.Reference || item.Subject || 'Untitled Case').trim();
-                        
+
                         // Only include items with valid searchable text
                         if (!searchableText || searchableText.length === 0) {
                             return null;
                         }
-                        
+
                         // Ensure match and value are always strings, never objects
                         const safeMatch = String(searchableText || '');
                         const safeValue = String(displayValue || '');
-                        
+
                         // Final validation - ensure no [object Object] strings
                         if (safeMatch.includes('[object') || safeValue.includes('[object')) {
                             console.warn('⚠️ Found [object in data, skipping item:', { searchableText, displayValue });
                             return null;
                         }
-                        
+
                         return {
                             match: safeMatch,
                             value: safeValue,
@@ -1348,7 +1349,7 @@
                         }
                         return item.match.length > 0;
                     });
-                
+
                 // Debug: Log the searchData structure
                 console.log('📊 Search data sample:', searchData.slice(0, 2));
                 console.log('📊 Search data structure check:', {
@@ -1360,10 +1361,10 @@
                     valueType: typeof searchData[0]?.value,
                     valueIsString: typeof searchData[0]?.value === 'string'
                 });
-                
+
                 // Verify all items have string match and value
-                const invalidItems = searchData.filter(item => 
-                    typeof item.match !== 'string' || 
+                const invalidItems = searchData.filter(item =>
+                    typeof item.match !== 'string' ||
                     typeof item.value !== 'string' ||
                     item.match.includes('[object') ||
                     item.value.includes('[object')
@@ -1371,11 +1372,11 @@
                 if (invalidItems.length > 0) {
                     console.error('❌ Found invalid items in searchData:', invalidItems.length, invalidItems.slice(0, 3));
                 }
-                
+
                 // Initialize autoComplete.js
                 // Store reference to timeline instance for use in content function
                 const timelineInstance = this;
-                
+
                 // Create a simpler data structure for autoComplete.js
                 // autoComplete.js seems to wrap our data, so we need to ensure match is always accessible
                 const autoCompleteData = searchData.map(item => {
@@ -1393,9 +1394,9 @@
                     }
                     return cleanItem;
                 }).filter(item => item !== null);
-                
+
                 console.log('🔧 AutoComplete data sample:', autoCompleteData.slice(0, 2));
-                
+
                 this.autoCompleteInstance = new autoComplete({
                     selector: "#autoComplete",
                     placeHolder: "Search cases. Eg. 'pollution' or 'PIL No. 2526/2021'",
@@ -1430,13 +1431,13 @@
                                 hasValue: data?.value,
                                 valueType: typeof data?.value
                             });
-                            
+
                             // Force clear any existing content first
                             if (source) {
                                 source.textContent = ''; // Clear first
                                 source.innerHTML = ''; // Double clear
                             }
-                            
+
                             // Handle the case where autoComplete.js wraps our data
                             let actualData = data;
                             if (data && typeof data === 'object' && data.value && typeof data.value === 'object') {
@@ -1444,14 +1445,14 @@
                                 actualData = data.value;
                                 console.log('🔄 Unwrapped data from value property:', actualData);
                             }
-                            
+
                             try {
                                 // Use actualData (might be unwrapped)
                                 const item = actualData || data;
-                                
+
                                 let displayValue = 'Untitled Case';
                                 let matchText = '';
-                                
+
                                 // Check if item is our expected structure
                                 if (item && typeof item === 'object') {
                                     // Our structure: { match: string, value: string, _fullData: object }
@@ -1462,7 +1463,7 @@
                                             displayValue = String(item.value);
                                         }
                                     }
-                                    
+
                                     if (item.match !== undefined) {
                                         if (typeof item.match === 'string') {
                                             matchText = item.match;
@@ -1470,7 +1471,7 @@
                                             matchText = String(item.match);
                                         }
                                     }
-                                    
+
                                     // Fallback to _fullData if available
                                     if ((!displayValue || displayValue === 'Untitled Case' || displayValue.includes('[object')) && item._fullData) {
                                         const fullData = item._fullData;
@@ -1488,11 +1489,11 @@
                                     displayValue = item;
                                     matchText = item;
                                 }
-                                
+
                                 // Ensure we have valid strings (never show [object Object])
                                 displayValue = String(displayValue || 'Untitled Case');
                                 matchText = String(matchText || '');
-                                
+
                                 // Safety check - if somehow we got [object Object], replace it
                                 if (displayValue.includes('[object')) {
                                     console.warn('⚠️ Found [object in displayValue, replacing');
@@ -1502,14 +1503,14 @@
                                     console.warn('⚠️ Found [object in matchText, clearing');
                                     matchText = '';
                                 }
-                                
+
                                 // Truncate match text for display
                                 const truncatedMatch = matchText.length > 100 ? matchText.substring(0, 100) + '...' : matchText;
-                                
+
                                 // Get search query for highlighting
                                 const inputElement = document.getElementById('autoComplete');
                                 const query = inputElement ? inputElement.value : '';
-                                
+
                                 // Create HTML with manual highlighting of search query
                                 let highlightedMatch = truncatedMatch;
                                 if (query && query.length > 0 && truncatedMatch) {
@@ -1522,7 +1523,7 @@
                                         highlightedMatch = truncatedMatch;
                                     }
                                 }
-                                
+
                                 // Escape HTML for the title
                                 const escapedTitle = displayValue
                                     .replace(/&/g, '&amp;')
@@ -1530,7 +1531,7 @@
                                     .replace(/>/g, '&gt;')
                                     .replace(/"/g, '&quot;')
                                     .replace(/'/g, '&#039;');
-                                
+
                                 // Set the HTML content directly
                                 const htmlContent = `
                                     <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -1538,7 +1539,7 @@
                                         <div style="font-size: 12px; color: var(--gf-text-light);">${highlightedMatch}</div>
                                     </div>
                                 `;
-                                
+
                                 if (source) {
                                     source.innerHTML = htmlContent;
                                     console.log('✅ Content set successfully:', { displayValue, matchText: truncatedMatch.substring(0, 50) });
@@ -1579,19 +1580,19 @@
                                 } else {
                                     selectionValue = '';
                                 }
-                                
+
                                 this.autoCompleteInstance.input.value = selectionValue;
                                 this.searchQuery = selectionValue;
-                                
+
                                 // Update URL query parameter (ensure it's a string)
                                 this.updateSearchUrl(selectionValue);
-                                
+
                                 // Show clear button
                                 const clearButton = document.getElementById('clear-search');
                                 if (clearButton) {
                                     clearButton.classList.remove('hidden');
                                 }
-                                
+
                                 this.performSearch(selectionValue);
                             },
                             focus: () => {
@@ -1600,7 +1601,7 @@
                             },
                             results: (event) => {
                                 console.log('📝 Results event fired:', event.detail);
-                                
+
                                 // Fix the match property if it's "[object Object]"
                                 if (event.detail && event.detail.results) {
                                     event.detail.results.forEach((result, index) => {
@@ -1622,7 +1623,7 @@
                                             }
                                         }
                                     });
-                                    
+
                                     // Force re-render by manually updating each list item
                                     setTimeout(() => {
                                         const resultsList = document.getElementById('autoComplete_list_1');
@@ -1653,64 +1654,64 @@
                         }
                     }
                 });
-                
+
                 // Add input event listener for real-time search
                 const searchInput = document.getElementById('autoComplete');
                 const clearButton = document.getElementById('clear-search');
-                
+
                 searchInput.addEventListener('input', (event) => {
                     const query = event.target.value;
                     this.searchQuery = query;
-                    
+
                     // Show/hide clear button
                     if (query.trim()) {
                         clearButton.classList.remove('hidden');
                     } else {
                         clearButton.classList.add('hidden');
                     }
-                    
+
                     // Update URL query parameter
                     this.updateSearchUrl(query);
-                    
+
                     // Perform search
                     this.performSearch(query);
                 });
-                
+
                 // Add clear button functionality
                 clearButton.addEventListener('click', () => {
                     this.clearSearch();
                 });
-                
+
                 // Check for URL query parameter on initialization
                 this.loadSearchFromUrl();
             }
-            
+
             loadSearchFromUrl() {
                 const urlParams = new URLSearchParams(window.location.search);
                 const queryParam = urlParams.get('q');
-                
+
                 if (queryParam && queryParam.trim()) {
                     const searchInput = document.getElementById('autoComplete');
                     const clearButton = document.getElementById('clear-search');
-                    
+
                     // Populate the search input
                     searchInput.value = queryParam.trim();
                     this.searchQuery = queryParam.trim();
-                    
+
                     // Show clear button
                     clearButton.classList.remove('hidden');
-                    
+
                     // Perform the search
                     this.performSearch(queryParam.trim());
                 }
             }
-            
+
             updateSearchUrl(query) {
                 const url = new URL(window.location);
-                
+
                 // Ensure query is a string
                 const queryStr = query ? String(query).trim() : '';
-                
+
                 if (queryStr) {
                     // Update or add the 'q' parameter
                     url.searchParams.set('q', queryStr);
@@ -1718,41 +1719,41 @@
                     // Remove the 'q' parameter if query is empty
                     url.searchParams.delete('q');
                 }
-                
+
                 // Update URL without page reload
                 window.history.pushState({}, '', url);
             }
-            
+
             performSearch(query) {
                 this.searchQuery = query;
                 this.updateButtonVisibility();
                 this.updateVisualizationWithFilters();
             }
-            
+
             clearSearch() {
                 const searchInput = document.getElementById('autoComplete');
                 const clearButton = document.getElementById('clear-search');
-                
+
                 searchInput.value = '';
                 this.searchQuery = '';
                 clearButton.classList.add('hidden');
-                
+
                 // Update URL to remove query parameter
                 this.updateSearchUrl('');
-                
+
                 this.updateButtonVisibility();
                 this.updateVisualizationWithFilters();
             }
-            
+
             processData() {
                 // Group filtered data by subject
                 const groupedData = d3.group(this.filteredData, d => d.Subject);
-                
+
                 this.processedData = Array.from(groupedData, ([subject, cases]) => {
                     const years = cases.map(d => +d.Year).filter(year => !isNaN(year));
                     const minYear = d3.min(years);
                     const maxYear = d3.max(years);
-                    
+
                     // Sort cases by year and reference
                     const sortedCases = cases
                         .filter(d => d.Year && d.Reference)
@@ -1761,7 +1762,7 @@
                             if (yearDiff !== 0) return yearDiff;
                             return a.Reference.localeCompare(b.Reference);
                         });
-                    
+
                     return {
                         subject,
                         cases: sortedCases,
@@ -1771,13 +1772,13 @@
                         yearSpan: maxYear - minYear + 1
                     };
                 }).filter(d => d.minYear && d.maxYear);
-                
+
                 this.sortData('year');
             }
-            
+
             sortData(sortType) {
                 this.currentSort = sortType;
-                
+
                 switch (sortType) {
                     case 'year':
                         this.processedData.sort((a, b) => a.minYear - b.minYear);
@@ -1789,19 +1790,19 @@
                         this.processedData.sort((a, b) => a.subject.localeCompare(b.subject));
                         break;
                 }
-                
+
                 if (this.svg) {
                     this.updateVisualization();
                 }
             }
-            
+
             setupDimensions() {
                 this.height = this.processedData.length * this.rowHeight;
-                
+
                 // Responsive margin adjustments
                 const isMobile = window.innerWidth <= 768;
                 const isTablet = window.innerWidth <= 1024;
-                
+
                 if (isMobile) {
                     this.margin = { top: 45, right: 20, bottom: 60, left: 280 };
                     this.rowHeight = 35;
@@ -1812,18 +1813,18 @@
                     this.margin = { top: 50, right: 50, bottom: 80, left: 380 };
                     this.rowHeight = 40;
                 }
-                
+
                 // Recalculate height with new row height
                 this.height = this.processedData.length * this.rowHeight;
-                
+
                 // Responsive width calculation
                 const container = document.getElementById('timeline');
                 const containerWidth = container.clientWidth;
                 const padding = isMobile ? 20 : 40; // Account for container padding
-                
+
                 // Calculate available width after margins and padding
                 const availableWidth = containerWidth - padding - this.margin.left - this.margin.right;
-                
+
                 // Set minimum and maximum widths based on screen size
                 let minWidth, maxWidth;
                 if (isMobile) {
@@ -1836,23 +1837,23 @@
                     minWidth = 500;
                     maxWidth = 1100;
                 }
-                
+
                 this.width = Math.max(minWidth, Math.min(maxWidth, availableWidth));
             }
-            
+
             createVisualization() {
                 // Clear any existing visualization
                 d3.select('#timeline').selectAll('*').remove();
-                
+
                 // Ensure container has proper overflow handling
                 const container = d3.select('#timeline');
                 container.style('overflow-x', 'auto')
-                         .style('overflow-y', 'visible');
-                
+                    .style('overflow-y', 'visible');
+
                 // Create SVG with responsive sizing
                 const svgWidth = this.width + this.margin.left + this.margin.right;
                 const svgHeight = this.height + this.margin.top + this.margin.bottom;
-                
+
                 this.svg = container
                     .append('svg')
                     .attr('width', svgWidth)
@@ -1861,49 +1862,49 @@
                     .attr('preserveAspectRatio', 'xMidYMid meet')
                     .style('max-width', '100%')
                     .style('height', 'auto');
-                
+
                 this.g = this.svg.append('g')
                     .attr('transform', `translate(${this.margin.left},${this.margin.top})`);
-                
+
                 // Create scales
                 this.setupScales();
-                
+
                 // Create axes
                 this.createAxes();
-                
+
                 // Create timeline bars
                 this.createBars();
-                
+
                 // Create tooltip
                 this.createTooltip();
-                
+
                 // Update statistics
                 this.updateStatistics();
-                
+
                 // Setup event handlers
                 this.setupEventHandlers();
             }
-            
+
             createTagFilters() {
                 const container = document.getElementById('tag-filters');
-                
+
                 // Clear existing filters
                 container.innerHTML = '';
-                
+
                 // Calculate min and max counts for scaling
                 const counts = this.allTags.map(tagObj => tagObj.count);
                 const minCount = Math.min(...counts);
                 const maxCount = Math.max(...counts);
                 const baseSize = 12; // Base font size in px
                 const scaleRange = 4; // 4px variation as requested
-                
+
                 // Create filter buttons for each tag
                 this.allTags.forEach(tagObj => {
                     const button = document.createElement('button');
                     button.textContent = `${tagObj.tag} (${tagObj.count})`;
                     button.className = 'tag-filter-button';
                     button.setAttribute('data-tag', tagObj.tag);
-                    
+
                     // Calculate scaled font size based on count
                     let fontSize;
                     if (maxCount === minCount) {
@@ -1914,17 +1915,17 @@
                         const normalizedCount = (tagObj.count - minCount) / (maxCount - minCount);
                         fontSize = baseSize + (normalizedCount * scaleRange);
                     }
-                    
+
                     button.style.fontSize = `${fontSize}px`;
-                    
+
                     button.addEventListener('click', () => {
                         this.toggleTagFilter(tagObj.tag, button);
                     });
-                    
+
                     container.appendChild(button);
                 });
             }
-            
+
             toggleTagFilter(tag, button) {
                 if (this.activeTags.has(tag)) {
                     this.activeTags.delete(tag);
@@ -1933,55 +1934,42 @@
                     this.activeTags.add(tag);
                     button.classList.add('active');
                 }
-                
+
                 this.updateButtonVisibility();
                 this.updateVisualizationWithFilters();
             }
-            
-            
-            
-            updateVisualizationWithFilters() {
-                this.applyFilters();
-                this.processData();
-                this.setupDimensions();
-                this.createVisualization();
-                
-                // Reset selection since data has changed
-                this.selectedSubject = null;
-                this.sidebar.classList.add('collapsed');
-            }
-            
+
             setupScales() {
                 const allYears = this.processedData.flatMap(d => [d.minYear, d.maxYear]);
                 const yearExtent = d3.extent(allYears);
-                
+
                 this.xScale = d3.scaleLinear()
                     .domain(yearExtent)
                     .range([0, this.width]);
-                
+
                 this.yScale = d3.scaleBand()
                     .domain(this.processedData.map(d => d.subject))
                     .range([0, this.height])
                     .padding(0.1);
             }
-            
+
             createAxes() {
                 // Calculate responsive tick count based on available width and screen size
                 const isMobile = window.innerWidth <= 768;
                 const isTablet = window.innerWidth <= 1024;
-                
+
                 // Calculate available width for ticks
                 const availableWidth = this.width;
-                
+
                 // Estimate minimum space needed per tick (including label)
                 const minSpacePerTick = isMobile ? 60 : (isTablet ? 50 : 40);
-                
+
                 // Calculate maximum ticks that fit comfortably
                 const maxTicksBySpace = Math.floor(availableWidth / minSpacePerTick);
-                
+
                 // Get the year range
                 const yearRange = this.xScale.domain()[1] - this.xScale.domain()[0];
-                
+
                 // Calculate optimal tick count
                 let optimalTickCount;
                 if (isMobile) {
@@ -1994,34 +1982,34 @@
                     // On desktop, allow more ticks but still respect space constraints
                     optimalTickCount = Math.min(maxTicksBySpace, Math.max(5, Math.floor(yearRange / 2)));
                 }
-                
+
                 // Ensure we don't exceed the actual year range
                 optimalTickCount = Math.min(optimalTickCount, yearRange + 1);
-                
+
                 // X-axis (years) - bottom
                 const xAxisBottom = d3.axisBottom(this.xScale)
                     .tickFormat(d3.format('d'))
                     .ticks(optimalTickCount);
-                
+
                 this.g.append('g')
                     .attr('class', 'axis x-axis x-axis-bottom')
                     .attr('transform', `translate(0,${this.height})`)
                     .call(xAxisBottom);
-                
+
                 // X-axis (years) - top
                 const xAxisTop = d3.axisTop(this.xScale)
                     .tickFormat(d3.format('d'))
                     .ticks(optimalTickCount);
-                
+
                 this.g.append('g')
                     .attr('class', 'axis x-axis x-axis-top')
                     .attr('transform', `translate(0,0)`)
                     .call(xAxisTop);
-                
+
                 // X-axis label with responsive positioning and sizing
                 const labelY = isMobile ? -20 : (isTablet ? -22 : -25);
                 const labelFontSize = isMobile ? '12px' : (isTablet ? '13px' : '14px');
-                
+
                 this.g.append('text')
                     .attr('x', this.width / 2)
                     .attr('y', labelY)
@@ -2032,7 +2020,7 @@
                     .style('font-family', 'Source Sans Pro, sans-serif')
                     .text('Year');
             }
-            
+
             createBars() {
                 // Create the visual bars
                 const bars = this.g.selectAll('.subject-bar')
@@ -2053,7 +2041,7 @@
                     .attr('stroke', '#fff')
                     .attr('stroke-width', 1)
                     .attr('rx', 4);
-                
+
                 // Create invisible overlay rectangles for easier clicking (full row width)
                 const clickOverlays = this.g.selectAll('.subject-click-overlay')
                     .data(this.processedData)
@@ -2067,16 +2055,16 @@
                     .attr('fill', 'transparent')
                     .attr('cursor', 'pointer')
                     .style('pointer-events', 'all');
-                
+
                 // Subject labels with responsive text length and click handling
                 const isMobile = window.innerWidth <= 768;
                 const maxSubjectLength = isMobile ? 30 : (window.innerWidth <= 1024 ? 45 : 60);
                 const labelFontSize = isMobile ? '14px' : (window.innerWidth <= 1024 ? '16px' : '18px');
-                
+
                 // Calculate label width based on available margin space
                 const labelWidth = this.margin.left - 20; // Leave some padding
                 const rowHeight = this.yScale.bandwidth();
-                
+
                 const subjectLabels = this.g.selectAll('.subject-label')
                     .data(this.processedData)
                     .enter()
@@ -2112,7 +2100,7 @@
                         const div = foreignObject.select('div');
                         if (!div.empty()) {
                             div.style('color', '#1f2937')
-                               .style('font-weight', 'bold');
+                                .style('font-weight', 'bold');
                         }
                         // Also show tooltip
                         this.showTooltip(event, d);
@@ -2131,7 +2119,7 @@
                         const div = foreignObject.select('div');
                         if (!div.empty()) {
                             div.style('color', '#374151')
-                               .style('font-weight', '500');
+                                .style('font-weight', '500');
                         }
                         // Hide tooltip
                         this.hideTooltip();
@@ -2146,13 +2134,13 @@
                     .on('click', (event, d) => {
                         this.selectSubject(d);
                     });
-                
+
                 // Note: Tooltips are no longer needed since we show full text in multiline labels
-                
+
                 // Case count labels on bars with responsive sizing
                 const countFontSize = isMobile ? '9px' : (window.innerWidth <= 1024 ? '10px' : '11px');
                 const countText = isMobile ? (d => `${d.caseCount}`) : (d => `${d.caseCount} cases`);
-                
+
                 this.g.selectAll('.case-count')
                     .data(this.processedData)
                     .enter()
@@ -2175,13 +2163,13 @@
                     .style('pointer-events', 'none')
                     .text(countText);
             }
-            
+
             createTooltip() {
                 this.tooltip = d3.select('body')
                     .append('div')
                     .attr('class', 'tooltip')
                     .style('opacity', 0);
-                
+
                 // Attach events to the click overlays for better interaction
                 this.g.selectAll('.subject-click-overlay')
                     .on('mouseover', (event, d) => {
@@ -2209,61 +2197,61 @@
                         this.selectSubject(d);
                     });
             }
-            
+
             showTooltip(event, data) {
                 const content = this.createTooltipContent(data);
-                
+
                 this.tooltip
                     .html(content)
                     .style('opacity', 0.95);
-                
+
                 this.moveTooltip(event);
             }
-            
+
             moveTooltip(event) {
                 const tooltipNode = this.tooltip.node();
                 const tooltipRect = tooltipNode.getBoundingClientRect();
                 const windowWidth = window.innerWidth;
                 const windowHeight = window.innerHeight;
-                
+
                 let left = event.pageX + 15;
                 let top = event.pageY - 10;
-                
+
                 // Adjust if tooltip goes off screen
                 if (left + tooltipRect.width > windowWidth) {
                     left = event.pageX - tooltipRect.width - 15;
                 }
-                
+
                 if (top + tooltipRect.height > windowHeight) {
                     top = event.pageY - tooltipRect.height - 10;
                 }
-                
+
                 this.tooltip
                     .style('left', left + 'px')
                     .style('top', top + 'px');
             }
-            
+
             hideTooltip() {
                 this.tooltip.style('opacity', 0);
             }
-            
+
             createTooltipContent(data) {
                 // Calculate statistics
                 const stats = this.calculateCaseStatistics(data);
-                
+
                 let content = `<h3>${data.subject}</h3>`;
                 content += `<div style="margin-bottom: 8px;"><strong>Period:</strong> ${data.minYear}-${data.maxYear} (${data.yearSpan} years)</div>`;
                 content += `<div style="margin-bottom: 8px;"><strong>Case Count:</strong> ${data.caseCount}</div>`;
                 content += `<div style="margin-bottom: 8px;"><strong>Archived:</strong> ${stats.archived.count} (${stats.archived.percentage}%)</div>`;
                 content += `<div style="margin-bottom: 8px;"><strong>Cases Digitized:</strong> ${stats.digitized.count} (${stats.digitized.percentage}%)</div>`;
-                
+
                 content += `<div style="margin-top: 10px; margin-bottom: 5px;"><strong>Case Nos:</strong></div>`;
                 content += `<div style="max-height: 120px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 8px; background: rgba(0,0,0,0.3);">`;
-                
+
                 // Group cases by year and show references
                 const casesByYear = this.groupCasesByYear(data.cases);
                 const years = Object.keys(casesByYear).sort();
-                
+
                 years.forEach(year => {
                     const references = casesByYear[year].map(c => c.Reference).join(', ');
                     const truncatedRefs = this.truncateText(references, 65);
@@ -2271,151 +2259,54 @@
                     content += `<span style="color: #60a5fa; font-weight: bold;">${year}:</span> ${truncatedRefs}`;
                     content += `</div>`;
                 });
-                
+
                 content += `</div>`;
-                
+
                 content += `<div style="font-style: italic; color: #9ca3af; margin-top: 8px; font-size: 10px;">Click to view all cases in detail →</div>`;
-                
+
                 return content;
             }
-            
+
             selectSubject(data) {
                 // Update selected state
                 this.selectedSubject = data;
-                
+
                 // Update visual selection on bars - keep hover-like effect active
                 this.g.selectAll('.subject-bar')
                     .classed('selected', d => d === data)
                     .style('opacity', d => d === data ? 0.8 : 1)
                     .style('stroke-width', d => d === data ? 2 : 1);
-                
+
                 // Show sidebar with full details
-                this.showSidebar(data, true);
+                this.showSidebar(data);
             }
-            
-            showSidebar(data, isPermanent = false) {
-                // Show sidebar
-                this.sidebar.classList.remove('collapsed');
-                
-                // Update sidebar header
-                document.getElementById('sidebar-title').textContent = data.subject;
-                document.getElementById('sidebar-subtitle').textContent = 
-                    `${data.minYear}-${data.maxYear} • ${data.caseCount} cases`;
-                
-                // Update sidebar content
-                this.updateSidebarContent(data);
-            }
-            
-            hideSidebar() {
-                if (!this.selectedSubject) {
-                    this.sidebar.classList.add('collapsed');
-                }
-            }
-            
-            updateSidebarContent(data) {
-                const content = document.getElementById('sidebar-content');
-                
-                if (data.cases.length === 0) {
-                    content.innerHTML = `
-                        <div class="sidebar-empty">
-                            <div class="icon">📂</div>
-                            <p>No cases found for this subject</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                let html = '';
-                data.cases.forEach(caseItem => {
-                    html += this.createCaseListItem(caseItem);
-                });
-                
-                content.innerHTML = html;
-            }
-            
-            createCaseListItem(caseItem) {
-                const links = this.getCaseLinks(caseItem);
-                const imageData = caseItem.Image ? this.parseImageField(caseItem.Image) : null;
-                const timelineData = caseItem.Timeline ? this.parseTimelineField(caseItem.Timeline) : null;
-                const timelineHTML = timelineData ? this.createTimelineHTML(timelineData) : '';
-                
-                // Get Archive URL for clickable thumbnail and title
-                const archiveUrl = caseItem.Archive && caseItem.Archive.trim() ? caseItem.Archive.trim() : null;
-                const hasArchive = !!archiveUrl;
-                
-                // Create thumbnail
-                const thumbnailHTML = this.createThumbnailHTML(imageData, archiveUrl);
-                
-                // Parse tags if available
-                const tags = caseItem.Tags ? caseItem.Tags.split(/[,;]/).map(t => t.trim()).filter(t => t) : [];
-                
-                // Create title with link
-                const titleText = caseItem.Title || caseItem.Subject || 'Untitled Case';
-                const titleHTML = archiveUrl 
-                    ? `<a href="${archiveUrl}" target="_blank" class="case-title-link"><h3 class="case-title">${titleText}</h3></a>`
-                    : `<h3 class="case-title">${titleText}</h3>`;
-                
-                // Create metadata with icons (Year removed, now in top right)
-                const metadataItems = [];
-                if (caseItem.Reference) {
-                    metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-globe"></i>${caseItem.Reference}</span>`);
-                }
-                if (tags.length > 0) {
-                    metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-tag"></i>${tags.slice(0, 3).join(', ')}${tags.length > 3 ? '...' : ''}</span>`);
-                }
-                
-                const metadataHTML = metadataItems.length > 0 
-                    ? `<div class="case-metadata">${metadataItems.join('<span class="case-metadata-separator">|</span>')}</div>` 
-                    : '';
-                
-                // Year badge in top right
-                const yearBadgeHTML = caseItem.Year 
-                    ? `<div class="case-year-badge">${caseItem.Year}</div>` 
-                    : '';
-                
-                return `
-                    <div class="case-list-item ${hasArchive ? 'has-archive' : ''}">
-                        ${yearBadgeHTML}
-                        <div class="case-item-content">
-                            ${thumbnailHTML}
-                            <div class="case-content">
-                                ${titleHTML}
-                                ${metadataHTML}
-                                ${caseItem.Description ? `<div class="case-description">${caseItem.Description}</div>` : ''}
-                                ${timelineHTML}
-                                ${links.length > 0 ? `<div class="case-links">${links.join('')}</div>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-            
+
             getCaseLinks(caseItem) {
                 const links = [];
-                
+
                 if (caseItem.Archive && caseItem.Archive.trim()) {
                     links.push(`<a href="${caseItem.Archive}" target="_blank" class="case-link archive">📁 Archive</a>`);
                 }
-                
+
                 if (caseItem.Petition && caseItem.Petition.trim()) {
                     links.push(`<a href="${caseItem.Petition}" target="_blank" class="case-link petition">📄 Petition</a>`);
                 }
-                
+
                 if (caseItem['Additional Documents'] && caseItem['Additional Documents'].trim()) {
                     links.push(`<a href="${caseItem['Additional Documents']}" target="_blank" class="case-link documents">📋 Documents</a>`);
                 }
-                
+
                 if (caseItem.Order && caseItem.Order.trim()) {
                     links.push(`<a href="${caseItem.Order}" target="_blank" class="case-link order">⚖️ Order</a>`);
                 }
-                
+
                 return links;
             }
-            
-            
+
+
             updateVisualization() {
                 this.setupScales();
-                
+
                 // Update bars and maintain selected state
                 this.g.selectAll('.subject-bar')
                     .data(this.processedData)
@@ -2439,7 +2330,7 @@
                                 .style('stroke-width', d => d === this.selectedSubject ? 2 : 1);
                         }
                     });
-                
+
                 // Update click overlays
                 this.g.selectAll('.subject-click-overlay')
                     .data(this.processedData)
@@ -2448,14 +2339,14 @@
                     .attr('y', d => this.yScale(d.subject))
                     .attr('width', this.width)
                     .attr('height', this.yScale.bandwidth());
-                
+
                 // Update labels with responsive text length
                 const isMobile = window.innerWidth <= 768;
                 const maxSubjectLength = isMobile ? 30 : (window.innerWidth <= 1024 ? 45 : 60);
                 const labelFontSize = isMobile ? '14px' : (window.innerWidth <= 1024 ? '16px' : '18px');
                 const labelWidth = this.margin.left - 20; // Leave some padding
                 const rowHeight = this.yScale.bandwidth();
-                
+
                 this.g.selectAll('.subject-label')
                     .data(this.processedData)
                     .transition()
@@ -2511,7 +2402,7 @@
                                 ">${d.subject}</div>
                             `);
                     });
-                
+
                 // Re-attach event handlers to labels after update
                 this.g.selectAll('.subject-label')
                     .style('cursor', 'pointer')
@@ -2520,7 +2411,7 @@
                         const div = foreignObject.select('div');
                         if (!div.empty()) {
                             div.style('color', '#1f2937')
-                               .style('font-weight', 'bold');
+                                .style('font-weight', 'bold');
                         }
                         this.showTooltip(event, d);
                         this.g.selectAll('.subject-bar')
@@ -2536,7 +2427,7 @@
                         const div = foreignObject.select('div');
                         if (!div.empty()) {
                             div.style('color', '#374151')
-                               .style('font-weight', '500');
+                                .style('font-weight', '500');
                         }
                         this.hideTooltip();
                         // Reset the visual bar highlight only if not selected
@@ -2550,11 +2441,11 @@
                     .on('click', (event, d) => {
                         this.selectSubject(d);
                     });
-                
+
                 // Update case counts with responsive sizing
                 const countFontSize = isMobile ? '9px' : (window.innerWidth <= 1024 ? '10px' : '11px');
                 const countText = isMobile ? (d => `${d.caseCount}`) : (d => `${d.caseCount} cases`);
-                
+
                 this.g.selectAll('.case-count')
                     .data(this.processedData)
                     .transition()
@@ -2571,13 +2462,13 @@
                     .style('pointer-events', 'none')
                     .text(countText);
             }
-            
+
             updateStatistics() {
                 const totalCases = this.filteredData.length;
                 const totalSubjects = this.processedData.length;
                 const years = this.processedData.flatMap(d => [d.minYear, d.maxYear]);
                 const yearSpan = d3.max(years) - d3.min(years) + 1;
-                
+
                 // Store statistics for external access
                 this.statistics = {
                     totalCases: totalCases,
@@ -2585,7 +2476,7 @@
                     yearSpan: yearSpan
                 };
             }
-            
+
             getStatistics() {
                 return this.statistics || {
                     totalCases: 0,
@@ -2593,23 +2484,23 @@
                     yearSpan: 0
                 };
             }
-            
+
             setupEventHandlers() {
                 // Handle window resize
                 window.addEventListener('resize', () => {
                     this.handleResize();
                 });
-                
+
                 // Handle clicking outside to close sidebar
                 document.addEventListener('click', (event) => {
-                    if (!this.sidebar.contains(event.target) && 
-                        !event.target.closest('.subject-bar') && 
+                    if (!this.sidebar.contains(event.target) &&
+                        !event.target.closest('.subject-bar') &&
                         !event.target.closest('.subject-click-overlay') &&
                         !event.target.closest('.subject-label')) {
                         this.clearSelection();
                     }
                 });
-                
+
                 // Handle sidebar close button
                 document.getElementById('sidebar-close').addEventListener('click', (event) => {
                     event.stopPropagation();
@@ -2621,26 +2512,26 @@
                         this.clearSelection();
                     }
                 });
-                
+
                 // Handle clear filter button
                 document.getElementById('clear-filter-button').addEventListener('click', (event) => {
                     event.stopPropagation();
                     this.clearAllFilters();
                 });
-                
+
                 // Handle filter icon button
                 document.getElementById('filter-icon-button').addEventListener('click', () => {
                     this.toggleFiltersAside();
                 });
-                
+
                 // Initialize button visibility
                 this.updateButtonVisibility();
             }
-            
+
             clearAllFilters() {
                 // Clear all active tag filters
                 this.activeTags.clear();
-                
+
                 // Clear search query
                 const searchInput = document.getElementById('autoComplete');
                 const clearButton = document.getElementById('clear-search');
@@ -2651,21 +2542,21 @@
                     clearButton.classList.add('hidden');
                 }
                 this.searchQuery = '';
-                
+
                 // Remove active class from all tag filter buttons
                 document.querySelectorAll('.tag-filter-button.active').forEach(button => {
                     button.classList.remove('active');
                 });
-                
+
                 // Update visualization and button visibility
                 this.updateButtonVisibility();
                 this.updateVisualizationWithFilters();
             }
-            
+
             hasActiveFilters() {
                 return this.activeTags.size > 0 || (this.searchQuery && this.searchQuery.trim().length > 0);
             }
-            
+
             updateButtonVisibility() {
                 const sidebarClose = document.getElementById('sidebar-close');
                 const clearFilterButton = document.getElementById('clear-filter-button');
@@ -2674,7 +2565,7 @@
                 const aside = document.getElementById('filters-and-timeline-aside');
                 const mainLayout = document.querySelector('.main-layout-new');
                 const hasFilters = this.hasActiveFilters();
-                
+
                 if (hasFilters) {
                     // Show close button and clear filter button, hide filter icon
                     sidebarClose.classList.remove('hidden');
@@ -2698,7 +2589,7 @@
                     if (mainLayout) {
                         mainLayout.classList.add('filters-collapsed');
                     }
-                    
+
                     // Re-attach event listener when button becomes visible to ensure it works
                     // Clone and replace to remove any existing listeners
                     if (filterIconButton && filterIconButton.parentNode) {
@@ -2715,12 +2606,12 @@
                     }
                 }
             }
-            
+
             toggleFiltersAside() {
                 const aside = document.getElementById('filters-and-timeline-aside');
                 const filterButtonText = document.getElementById('filter-icon-button-text');
                 const mainLayout = document.querySelector('.main-layout-new');
-                
+
                 if (aside.classList.contains('collapsed')) {
                     aside.classList.remove('collapsed');
                     if (filterButtonText) {
@@ -2739,7 +2630,7 @@
                     }
                 }
             }
-            
+
             handleResize() {
                 // Debounce resize handling
                 clearTimeout(this.resizeTimeout);
@@ -2750,29 +2641,27 @@
                     this.createVisualization();
                     // If sidebar is open, make sure it stays properly positioned
                     if (this.selectedSubject) {
-                        this.showSidebar(this.selectedSubject, true);
+                        this.showSidebar(this.selectedSubject);
                     }
                 }, 300);
             }
-            
-            
-            
+
             calculateCaseStatistics(data) {
                 const totalCases = data.cases.length;
-                
+
                 // Count archived cases (those with Archive links)
                 const archivedCases = data.cases.filter(c => c.Archive && c.Archive.trim()).length;
                 const archivedPercentage = totalCases > 0 ? Math.round((archivedCases / totalCases) * 100) : 0;
-                
+
                 // Count digitized cases (those with any digital document links)
                 const digitizedCases = data.cases.filter(c => {
                     return (c.Archive && c.Archive.trim()) ||
-                           (c.Petition && c.Petition.trim()) ||
-                           (c['Additional Documents'] && c['Additional Documents'].trim()) ||
-                           (c.Order && c.Order.trim());
+                        (c.Petition && c.Petition.trim()) ||
+                        (c['Additional Documents'] && c['Additional Documents'].trim()) ||
+                        (c.Order && c.Order.trim());
                 }).length;
                 const digitizedPercentage = totalCases > 0 ? Math.round((digitizedCases / totalCases) * 100) : 0;
-                
+
                 return {
                     archived: {
                         count: archivedCases,
@@ -2784,10 +2673,10 @@
                     }
                 };
             }
-            
+
             groupCasesByYear(cases) {
                 const grouped = {};
-                
+
                 cases.forEach(caseItem => {
                     const year = caseItem.Year;
                     if (!grouped[year]) {
@@ -2795,83 +2684,83 @@
                     }
                     grouped[year].push(caseItem);
                 });
-                
+
                 return grouped;
             }
-            
+
             truncateText(text, maxLength) {
                 return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
             }
-            
+
             showContent() {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('stats').classList.remove('hidden');
                 document.getElementById('timeline-content').classList.remove('hidden');
             }
-            
+
             showError(message) {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('error').classList.remove('hidden');
                 document.getElementById('error-message').textContent = message;
             }
-            
+
             showProcessingErrors(errors, warnings) {
                 // Create a more detailed error display for processing issues
                 if (errors.length > 0 || warnings.length > 0) {
                     console.warn('Data processing completed with issues:');
-                    
+
                     if (errors.length > 0) {
                         console.error('Errors:', errors);
-                        
+
                         // Show a summary notification to the user
                         const errorSummary = errors.slice(0, 3).map(e => e.message).join('; ');
                         const moreText = errors.length > 3 ? ` and ${errors.length - 3} more errors` : '';
-                        
+
                         // You could add a notification system here if desired
                         console.warn(`⚠️ Data processing errors: ${errorSummary}${moreText}`);
                     }
-                    
+
                     if (warnings.length > 0) {
                         console.warn('Warnings:', warnings);
-                        
+
                         // Show a summary notification to the user
                         const warningSummary = warnings.slice(0, 2).map(w => w.message).join('; ');
                         const moreText = warnings.length > 2 ? ` and ${warnings.length - 2} more warnings` : '';
-                        
+
                         console.warn(`ℹ️ Data processing warnings: ${warningSummary}${moreText}`);
                     }
                 }
             }
-            
-            
-            showSidebar(data, isPermanent = false) {
+
+
+            showSidebar(data) {
                 // Show sidebar
                 this.sidebar.classList.remove('collapsed');
-                
+
                 // Update sidebar header
                 document.getElementById('sidebar-title').textContent = data.subject;
-                document.getElementById('sidebar-subtitle').textContent = 
+                document.getElementById('sidebar-subtitle').textContent =
                     `${data.minYear}-${data.maxYear} • ${data.caseCount} cases`;
-                
+
                 // Show sort controls even for single subject
                 const sortControls = document.getElementById('sidebar-sort-controls');
                 if (sortControls) {
                     sortControls.style.display = 'flex';
                 }
-                
+
                 // Update sidebar content
                 this.updateSidebarContent(data);
             }
-            
+
             hideSidebar() {
                 if (!this.selectedSubject) {
                     this.sidebar.classList.add('collapsed');
                 }
             }
-            
+
             updateSidebarContent(data) {
                 const content = document.getElementById('sidebar-content');
-                
+
                 if (data.cases.length === 0) {
                     content.innerHTML = `
                         <div class="sidebar-empty">
@@ -2881,23 +2770,23 @@
                     `;
                     return;
                 }
-                
+
                 let html = '';
                 data.cases.forEach(caseItem => {
                     html += this.createCaseListItem(caseItem);
                 });
-                
+
                 content.innerHTML = html;
             }
-            
+
             parseImageField(imageField) {
                 if (!imageField || !imageField.trim()) {
                     return null;
                 }
-                
+
                 // Format: 'URL CC-license Attribution'
                 // Example: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Bengal_tiger_in_Sanjay_Dubri_Tiger_Reserve_December_2024_by_Tisha_Mukherjee_10.jpg/330px-Bengal_tiger_in_Sanjay_Dubri_Tiger_Reserve_December_2024_by_Tisha_Mukherjee_10.jpg CC-by-SA Tisha Mukherjee'
-                
+
                 const parts = imageField.trim().split(/\s+(?=CC-)/);
                 if (parts.length < 2) {
                     // If no license info, just return the URL
@@ -2908,17 +2797,17 @@
                         sourceUrl: imageField.trim()
                     };
                 }
-                
+
                 const url = parts[0].trim();
                 const rest = parts.slice(1).join(' ');
-                
+
                 // Extract license (starts with CC-)
                 const licenseMatch = rest.match(/^(CC-[^\s]+)/);
                 const license = licenseMatch ? licenseMatch[1] : null;
-                
+
                 // Attribution is everything after the license
                 const attribution = license ? rest.replace(/^CC-[^\s]+\s*/, '').trim() : rest.trim();
-                
+
                 // Generate source URL
                 let sourceUrl = url;
                 if (url.includes('upload.wikimedia.org')) {
@@ -2931,7 +2820,7 @@
                         sourceUrl = `https://commons.wikimedia.org/wiki/File:${filename}`;
                     }
                 }
-                
+
                 return {
                     url: url,
                     license: license,
@@ -2939,88 +2828,58 @@
                     sourceUrl: sourceUrl
                 };
             }
-            
+
             createThumbnailHTML(imageData, archiveUrl) {
-                const imageUrl = imageData && imageData.url 
-                    ? imageData.url 
+                const imageUrl = imageData && imageData.url
+                    ? imageData.url
                     : 'https://digitallibrary.un.org/img/tind_article_placeholder.png';
-                
-                const onClick = archiveUrl 
-                    ? `onclick="window.open('${archiveUrl}', '_blank')"` 
+
+                const onClick = archiveUrl
+                    ? `onclick="window.open('${archiveUrl}', '_blank')"`
                     : '';
-                
+
                 return `
                     <div class="case-thumbnail" ${onClick}>
                         <img src="${imageUrl}" alt="Case thumbnail" loading="lazy" />
                     </div>
                 `;
             }
-            
-            createImageHTML(imageData) {
-                if (!imageData || !imageData.url) {
-                    return '';
-                }
-                
-                let attributionHTML = '';
-                if (imageData.license || imageData.attribution) {
-                    const attributionParts = [];
-                    if (imageData.license) {
-                        attributionParts.push(imageData.license);
-                    }
-                    if (imageData.attribution) {
-                        attributionParts.push(imageData.attribution);
-                    }
-                    
-                    attributionHTML = `
-                        <div class="case-image-attribution">
-                            ${attributionParts.join(' ')}${imageData.sourceUrl ? ` • <a href="${imageData.sourceUrl}" target="_blank" rel="noopener noreferrer">Source</a>` : ''}
-                        </div>
-                    `;
-                }
-                
-                return `
-                    <div class="case-image-container">
-                        <img src="${imageData.url}" alt="Case image" class="case-image" loading="lazy" />
-                        ${attributionHTML}
-                    </div>
-                `;
-            }
-            
+
             parseTimelineField(timelineField) {
                 if (!timelineField || !timelineField.trim()) {
                     return null;
                 }
-                
+
                 // Format: Each line is "YYYY-MM-DD Description [optional URL]"
                 // Example:
                 // "2025-11-14 Final Judgement
                 // 2025-09-16 CEC meeting, New Delhi
                 // 2025-09-10 Supreme Court Directs CEC To Examine Mhadei Tiger Reserve Proposal, Status Quo Ordered In Goa https://www.thelawadvice.com/news/..."
-                
+
                 const lines = timelineField.trim().split(/\n+/).filter(line => line.trim());
                 const timelineItems = [];
-                
+
                 for (const line of lines) {
                     const trimmedLine = line.trim();
                     if (!trimmedLine) continue;
-                    
+
                     // Match date pattern: YYYY-MM-DD at the start
                     const dateMatch = trimmedLine.match(/^(\d{4}-\d{2}-\d{2})\s+(.+)$/);
                     if (!dateMatch) continue;
-                    
+
                     const date = dateMatch[1];
                     const rest = dateMatch[2].trim();
-                    
+
                     // Try to extract URL (starts with http:// or https://)
                     const urlMatch = rest.match(/\s+(https?:\/\/[^\s]+)$/);
                     let description = rest;
                     let url = null;
-                    
+
                     if (urlMatch) {
                         url = urlMatch[1];
                         description = rest.substring(0, urlMatch.index).trim();
                     }
-                    
+
                     // Format date for display (YYYY-MM-DD -> DD MMM YYYY)
                     const dateObj = new Date(date + 'T00:00:00');
                     const formattedDate = dateObj.toLocaleDateString('en-GB', {
@@ -3028,7 +2887,7 @@
                         month: 'short',
                         year: 'numeric'
                     });
-                    
+
                     timelineItems.push({
                         date: date,
                         formattedDate: formattedDate,
@@ -3036,27 +2895,27 @@
                         url: url
                     });
                 }
-                
+
                 // Sort by date (newest first)
                 timelineItems.sort((a, b) => {
                     return new Date(b.date) - new Date(a.date);
                 });
-                
+
                 return timelineItems.length > 0 ? timelineItems : null;
             }
-            
+
             createTimelineHTML(timelineItems) {
                 if (!timelineItems || timelineItems.length === 0) {
                     return '';
                 }
-                
+
                 let itemsHTML = '';
                 timelineItems.forEach(item => {
                     let descriptionHTML = item.description;
                     if (item.url) {
                         descriptionHTML += ` <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="case-timeline-link">Read more →</a>`;
                     }
-                    
+
                     itemsHTML += `
                         <div class="case-timeline-item">
                             <div class="case-timeline-date">${item.formattedDate}</div>
@@ -3064,7 +2923,7 @@
                         </div>
                     `;
                 });
-                
+
                 return `
                     <div class="case-timeline">
                         <div class="case-timeline-title">Timeline</div>
@@ -3072,29 +2931,29 @@
                     </div>
                 `;
             }
-            
+
             createCaseListItem(caseItem) {
                 const links = this.getCaseLinks(caseItem);
                 const imageData = caseItem.Image ? this.parseImageField(caseItem.Image) : null;
                 const timelineData = caseItem.Timeline ? this.parseTimelineField(caseItem.Timeline) : null;
                 const timelineHTML = timelineData ? this.createTimelineHTML(timelineData) : '';
-                
+
                 // Get Archive URL for clickable thumbnail and title
                 const archiveUrl = caseItem.Archive && caseItem.Archive.trim() ? caseItem.Archive.trim() : null;
                 const hasArchive = !!archiveUrl;
-                
+
                 // Create thumbnail
                 const thumbnailHTML = this.createThumbnailHTML(imageData, archiveUrl);
-                
+
                 // Parse tags if available
                 const tags = caseItem.Tags ? caseItem.Tags.split(/[,;]/).map(t => t.trim()).filter(t => t) : [];
-                
+
                 // Create title with link
                 const titleText = caseItem.Title || caseItem.Subject || 'Untitled Case';
-                const titleHTML = archiveUrl 
+                const titleHTML = archiveUrl
                     ? `<a href="${archiveUrl}" target="_blank" class="case-title-link"><h3 class="case-title">${titleText}</h3></a>`
                     : `<h3 class="case-title">${titleText}</h3>`;
-                
+
                 // Create metadata with icons (Year removed, now in top right)
                 const metadataItems = [];
                 if (caseItem.Reference) {
@@ -3103,16 +2962,16 @@
                 if (tags.length > 0) {
                     metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-tag"></i>${tags.slice(0, 3).join(', ')}${tags.length > 3 ? '...' : ''}</span>`);
                 }
-                
-                const metadataHTML = metadataItems.length > 0 
-                    ? `<div class="case-metadata">${metadataItems.join('<span class="case-metadata-separator">|</span>')}</div>` 
+
+                const metadataHTML = metadataItems.length > 0
+                    ? `<div class="case-metadata">${metadataItems.join('<span class="case-metadata-separator">|</span>')}</div>`
                     : '';
-                
+
                 // Year badge in top right
-                const yearBadgeHTML = caseItem.Year 
-                    ? `<div class="case-year-badge">${caseItem.Year}</div>` 
+                const yearBadgeHTML = caseItem.Year
+                    ? `<div class="case-year-badge">${caseItem.Year}</div>`
                     : '';
-                
+
                 return `
                     <div class="case-list-item ${hasArchive ? 'has-archive' : ''}">
                         ${yearBadgeHTML}
@@ -3129,53 +2988,53 @@
                     </div>
                 `;
             }
-            
+
             getCaseLinks(caseItem) {
                 const links = [];
-                
+
                 if (caseItem.Archive && caseItem.Archive.trim()) {
                     links.push(`<a href="${caseItem.Archive}" target="_blank" class="case-link archive">📁 Archive</a>`);
                 }
-                
+
                 if (caseItem.Petition && caseItem.Petition.trim()) {
                     links.push(`<a href="${caseItem.Petition}" target="_blank" class="case-link petition">📄 Petition</a>`);
                 }
-                
+
                 if (caseItem['Additional Documents'] && caseItem['Additional Documents'].trim()) {
                     links.push(`<a href="${caseItem['Additional Documents']}" target="_blank" class="case-link documents">📋 Documents</a>`);
                 }
-                
+
                 if (caseItem.Order && caseItem.Order.trim()) {
                     links.push(`<a href="${caseItem.Order}" target="_blank" class="case-link order">⚖️ Order</a>`);
                 }
-                
+
                 return links;
             }
-            
+
             clearSelection() {
                 this.selectedSubject = null;
                 this.g.selectAll('.subject-bar')
                     .classed('selected', false)
                     .style('opacity', 1)
                     .style('stroke-width', 1);
-                
+
                 // Show all cases again instead of hiding sidebar
                 this.showAllCasesOnLoad();
             }
-            
+
             updateVisualizationWithFilters() {
                 this.applyFilters();
                 this.processData();
                 this.setupDimensions();
                 this.createVisualization();
-                
+
                 // Reset selection since data has changed
                 this.selectedSubject = null;
-                
+
                 // Show all cases again after filter change
                 this.showAllCasesOnLoad();
             }
-            
+
             showAllCasesOnLoad() {
                 // Collect all cases from all subjects
                 const allCases = [];
@@ -3187,13 +3046,13 @@
                         });
                     });
                 });
-                
+
                 // Sort based on current sort order
                 this.sortAllCases(allCases);
-                
+
                 // Show sidebar with all cases
                 this.sidebar.classList.remove('collapsed');
-                
+
                 // Update sidebar header based on active tags
                 let titleText = 'All Cases';
                 if (this.activeTags.size > 0) {
@@ -3207,23 +3066,23 @@
                         titleText = `Cases involving ${activeTagsArray.join(', ')} and ${lastTag}`;
                     }
                 }
-                
+
                 document.getElementById('sidebar-title').textContent = titleText;
                 document.getElementById('sidebar-subtitle').textContent = `${allCases.length} cases`;
-                
+
                 // Show sort controls
                 const sortControls = document.getElementById('sidebar-sort-controls');
                 if (sortControls) {
                     sortControls.style.display = 'flex';
                 }
-                
+
                 // Update sidebar content with all cases
                 this.updateSidebarContentWithAllCases(allCases);
-                
+
                 // Setup sort control event handlers
                 this.setupSidebarSortControls();
             }
-            
+
             sortAllCases(allCases) {
                 if (this.sidebarSortOrder === 'oldest') {
                     // Sort by year (oldest first), then by reference
@@ -3241,10 +3100,10 @@
                     });
                 }
             }
-            
+
             updateSidebarContentWithAllCases(allCases) {
                 const content = document.getElementById('sidebar-content');
-                
+
                 if (allCases.length === 0) {
                     content.innerHTML = `
                         <div class="sidebar-empty">
@@ -3254,37 +3113,37 @@
                     `;
                     return;
                 }
-                
+
                 let html = '';
                 allCases.forEach(caseItem => {
                     html += this.createCaseListItemWithSubject(caseItem);
                 });
-                
+
                 content.innerHTML = html;
             }
-            
+
             createCaseListItemWithSubject(caseItem) {
                 const links = this.getCaseLinks(caseItem);
                 const imageData = caseItem.Image ? this.parseImageField(caseItem.Image) : null;
                 const timelineData = caseItem.Timeline ? this.parseTimelineField(caseItem.Timeline) : null;
                 const timelineHTML = timelineData ? this.createTimelineHTML(timelineData) : '';
-                
+
                 // Get Archive URL for clickable thumbnail and title
                 const archiveUrl = caseItem.Archive && caseItem.Archive.trim() ? caseItem.Archive.trim() : null;
                 const hasArchive = !!archiveUrl;
-                
+
                 // Create thumbnail
                 const thumbnailHTML = this.createThumbnailHTML(imageData, archiveUrl);
-                
+
                 // Parse tags if available
                 const tags = caseItem.Tags ? caseItem.Tags.split(/[,;]/).map(t => t.trim()).filter(t => t) : [];
-                
+
                 // Create title with link
                 const titleText = caseItem.Title || caseItem.Subject || 'Untitled Case';
-                const titleHTML = archiveUrl 
+                const titleHTML = archiveUrl
                     ? `<a href="${archiveUrl}" target="_blank" class="case-title-link"><h3 class="case-title">${titleText}</h3></a>`
                     : `<h3 class="case-title">${titleText}</h3>`;
-                
+
                 // Create metadata with icons (Year removed, now in top right)
                 const metadataItems = [];
                 if (caseItem.Reference) {
@@ -3293,16 +3152,16 @@
                 if (tags.length > 0) {
                     metadataItems.push(`<span class="case-metadata-item"><i class="fa fa-tag"></i>${tags.slice(0, 3).join(', ')}${tags.length > 3 ? '...' : ''}</span>`);
                 }
-                
-                const metadataHTML = metadataItems.length > 0 
-                    ? `<div class="case-metadata">${metadataItems.join('<span class="case-metadata-separator">|</span>')}</div>` 
+
+                const metadataHTML = metadataItems.length > 0
+                    ? `<div class="case-metadata">${metadataItems.join('<span class="case-metadata-separator">|</span>')}</div>`
                     : '';
-                
+
                 // Year badge in top right
-                const yearBadgeHTML = caseItem.Year 
-                    ? `<div class="case-year-badge">${caseItem.Year}</div>` 
+                const yearBadgeHTML = caseItem.Year
+                    ? `<div class="case-year-badge">${caseItem.Year}</div>`
                     : '';
-                
+
                 return `
                     <div class="case-list-item ${hasArchive ? 'has-archive' : ''}">
                         ${yearBadgeHTML}
@@ -3322,55 +3181,55 @@
                     </div>
                 `;
             }
-            
+
             setupSidebarSortControls() {
                 const oldestOption = document.getElementById('sort-oldest-first');
                 const newestOption = document.getElementById('sort-newest-first');
-                
+
                 if (!oldestOption || !newestOption) {
                     return; // Elements don't exist yet
                 }
-                
+
                 // Remove existing event listeners and add new ones
                 oldestOption.replaceWith(oldestOption.cloneNode(true));
                 newestOption.replaceWith(newestOption.cloneNode(true));
-                
+
                 // Get the new references
                 const newOldestOption = document.getElementById('sort-oldest-first');
                 const newNewestOption = document.getElementById('sort-newest-first');
-                
+
                 if (newOldestOption && newNewestOption) {
                     newOldestOption.addEventListener('click', () => {
                         this.setSidebarSortOrder('oldest');
                     });
-                    
+
                     newNewestOption.addEventListener('click', () => {
                         this.setSidebarSortOrder('newest');
                     });
                 }
             }
-            
+
             setSidebarSortOrder(order) {
                 this.sidebarSortOrder = order;
-                
+
                 // Update radio button states
                 const oldestOption = document.getElementById('sort-oldest-first');
                 const newestOption = document.getElementById('sort-newest-first');
-                
+
                 if (oldestOption && newestOption) {
                     oldestOption.classList.toggle('active', order === 'oldest');
                     newestOption.classList.toggle('active', order === 'newest');
-                    
+
                     // Update radio indicators
                     const oldestRadio = oldestOption.querySelector('.sidebar-sort-radio');
                     const newestRadio = newestOption.querySelector('.sidebar-sort-radio');
-                    
+
                     if (oldestRadio && newestRadio) {
                         oldestRadio.textContent = order === 'oldest' ? '×' : '';
                         newestRadio.textContent = order === 'newest' ? '×' : '';
                     }
                 }
-                
+
                 // Re-sort and update the sidebar content
                 if (this.selectedSubject) {
                     // If viewing a single subject, sort that subject's cases
@@ -3380,7 +3239,7 @@
                     this.showAllCasesOnLoad();
                 }
             }
-            
+
             updateSidebarContentSorted(data) {
                 // Sort the subject's cases based on current sort order
                 const sortedCases = [...data.cases];
@@ -3397,10 +3256,10 @@
                         return a.Reference.localeCompare(b.Reference);
                     });
                 }
-                
+
                 // Update sidebar content with sorted cases
                 const content = document.getElementById('sidebar-content');
-                
+
                 if (sortedCases.length === 0) {
                     content.innerHTML = `
                         <div class="sidebar-empty">
@@ -3410,15 +3269,15 @@
                     `;
                     return;
                 }
-                
+
                 let html = '';
                 sortedCases.forEach(caseItem => {
                     html += this.createCaseListItem(caseItem);
                 });
-                
+
                 content.innerHTML = html;
             }
-            
+
             /**
              * Update spreadsheet configuration (useful for debugging or switching data sources)
              * @param {Object} newConfig - New configuration options
@@ -3427,7 +3286,7 @@
                 this.spreadsheetProcessor.updateConfig(newConfig);
                 console.log('Spreadsheet configuration updated:', newConfig);
             }
-            
+
             /**
              * Get current field mappings (useful for debugging)
              * @returns {Object} Current field mappings
@@ -3435,7 +3294,7 @@
             getFieldMappings() {
                 return this.spreadsheetProcessor.getFieldMappings();
             }
-            
+
             /**
              * Reload data with current configuration
              */
@@ -3457,7 +3316,7 @@
                 }
             }
         }
-        
+
         // Initialize timeline when page loads
         document.addEventListener('DOMContentLoaded', () => {
             window.goaFoundationTimeline = new GoaFoundationTimeline();
